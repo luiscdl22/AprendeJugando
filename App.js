@@ -3,6 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import HomeScreen from './screens/HomeScreen';
+import BienvenidaScreen from './screens/BienvenidaScreen';
+import ComoJugar from './screens/ComoJugar';
+import CategoriasScreen from './screens/CategoriasScreen';
+import PerfilScreen from './screens/PerfilScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -11,16 +15,13 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
-        screenOptions={{
-          headerShown: false,
-        }}
+        screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Home" component={HomeScreen} />
-
-        {/*
-          Próximo paso: agregar aquí la pantalla de Categorías, por ejemplo:
-          <Stack.Screen name="Categorias" component={CategoriasScreen} />
-        */}
+        <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
+        <Stack.Screen name="ComoJugar" component={ComoJugar} />
+        <Stack.Screen name="Categorias" component={CategoriasScreen} />
+        <Stack.Screen name="Perfil" component={PerfilScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
