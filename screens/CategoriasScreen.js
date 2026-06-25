@@ -66,6 +66,7 @@ export default function CategoriasScreen({ navigation }) {
 
   const elegirCategoria = (categoria) => {
     // navigation.navigate('Juego', { categoria: categoria.id });
+     if (categoria.id === 'animales') navigation.navigate('Animales');
   };
 
   return (
