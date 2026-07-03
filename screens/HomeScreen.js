@@ -12,30 +12,11 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import * as Speech from 'expo-speech';
 import { useAudioPlayer } from 'expo-audio';
 import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
-
-const VOZ_ELEGIDA = {
-  identifier: 'es-us-x-esd-local',
-  language: 'es-US',
-};
-
-function hablar(texto, extra = {}) {
-  Speech.speak(texto, {
-    voice: VOZ_ELEGIDA.identifier || undefined,
-    language: VOZ_ELEGIDA.language,
-    pitch: 1.15,
-    rate: 0.92,
-    ...extra,
-    onError: () => {
-      Speech.speak(texto, { language: VOZ_ELEGIDA.language, pitch: 1.15, rate: 0.92 });
-    },
-  });
-}
 
 function useFlote(distancia, duracion, delay = 0) {
   const valor = useRef(new Animated.Value(0)).current;
@@ -96,11 +77,6 @@ export default function HomeScreen({ navigation }) {
     ]).start();
   }, []);
 
-  useEffect(() => {
-    hablar('Bienvenido a Aprende Jugando! Comencemos. Presiona el boton Jugar para comenzar con la diversion.');
-    return () => Speech.stop();
-  }, []);
-
   if (!fontsLoaded) {
     return <View style={styles.fondo} />;
   }
@@ -114,16 +90,11 @@ export default function HomeScreen({ navigation }) {
   };
 
   const handleJugar = async () => {
-    Speech.stop();
-    sonidoJugar.seekTo(0);
-    sonidoJugar.play();
+    try { sonidoJugar.seekTo(0); sonidoJugar.play(); } catch (_) {}
     try {
       const perfilGuardado = await AsyncStorage.getItem('perfil');
-      if (perfilGuardado) {
-        navigation.navigate('Categorias');
-      } else {
-        navigation.navigate('Bienvenida');
-      }
+      // Si ya hay perfil va directo al menú principal, si no al onboarding
+      navigation.navigate(perfilGuardado ? 'Menu' : 'Bienvenida');
     } catch (e) {
       navigation.navigate('Bienvenida');
     }
@@ -131,12 +102,12 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <LinearGradient
-      colors={['#E8F4FD', '#C5E3F7', '#A8D4F0']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
+      colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
       style={styles.fondo}
     >
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
 
       {/* Círculos animados — solo colores cambiados */}
       <Animated.View style={[styles.circulo, styles.circulo1, { transform: [{ translateY: flote1 }] }]} />
@@ -227,22 +198,22 @@ const styles = StyleSheet.create({
 
   // Círculos — mismas posiciones/tamaños, colores actualizados a celeste/coral/verde
   circulo: { position: 'absolute', borderRadius: 999 },
-  circulo1: { width: 110, height: 110, top: 60,    left: -20,  backgroundColor: 'rgba(255, 107, 107, 0.30)' },
-  circulo2: { width: 70,  height: 70,  top: 130,   right: -10, backgroundColor: 'rgba(255, 196, 0, 0.38)'   },
-  circulo3: { width: 60,  height: 60,  top: width * 0.6, left: 10, backgroundColor: 'rgba(255,255,255,0.28)' },
-  circulo4: { width: 130, height: 130, bottom: 160, right: -30, backgroundColor: 'rgba(76, 175, 80, 0.28)'  },
+  circulo1: { width: 110, height: 110, top: 60,    left: -20,  backgroundColor: 'rgba(255,255,255,0.10)' },
+  circulo2: { width: 70,  height: 70,  top: 130,   right: -10, backgroundColor: 'rgba(255,255,255,0.08)'   },
+  circulo3: { width: 60,  height: 60,  top: width * 0.6, left: 10, backgroundColor: 'rgba(255,255,255,0.10)' },
+  circulo4: { width: 130, height: 130, bottom: 160, right: -30, backgroundColor: 'rgba(255,255,255,0.07)'  },
 
   bloqueSuperior: { alignItems: 'center', marginTop: 10 },
   estrellaImg: { width: 70, height: 70 },
   titulo: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 32,
-    color: '#1A3C5E',
+    color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 40,
     marginTop: 8,
   },
-  tituloAcento: { color: '#FF6B6B' },
+  tituloAcento: { color: '#FFD166' },
 
   escenarioMascota: { alignItems: 'center', justifyContent: 'flex-end' },
   plataforma: {
@@ -251,7 +222,7 @@ const styles = StyleSheet.create({
     width: 190,
     height: 32,
     borderRadius: 999,
-    backgroundColor: 'rgba(26, 92, 155, 0.18)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   mascotaImg: { width: 270, height: 270 },
 
@@ -274,7 +245,7 @@ const styles = StyleSheet.create({
   textoBoton: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 24,
-    color: '#1A3C5E',
+    color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   ayuda: {

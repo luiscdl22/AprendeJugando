@@ -12,51 +12,44 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
+import CustomButton from '../components/CustomButton';
 
 const { width } = Dimensions.get('window');
 
 const PASOS = [
   {
     numero: '1',
-    color: '#4FC3D5',
-    colorBorde: '#3AA8BA',
-    imagen: require('../assets/images/tut_paso1.png'),
+    color: '#8B5CF6',
+    colorBorde: '#6D46D8',
+    imagen: require('../assets/images/cat_animales.png'),
     titulo: 'Elige una categoría',
-    descripcion: 'Escoge la categoría que más te guste: animales, frutas, transportes y más.',
+    descripcion: 'Animales, vehículos, dinosaurios o espacio.',
   },
   {
     numero: '2',
-    color: '#88CC88',
-    colorBorde: '#6AAE6A',
+    color: '#4FC3D5',
+    colorBorde: '#379EB4',
     imagen: require('../assets/images/tut_paso2.png'),
-    titulo: 'Adivina la silueta',
-    descripcion: 'Verás una silueta misteriosa. ¡Elige cuál de las 3 imágenes corresponde!',
+    titulo: 'Lee y observa',
+    descripcion: 'La información se queda visible para leer sin prisa.',
   },
   {
     numero: '3',
     color: '#FFB347',
-    colorBorde: '#E0903A',
+    colorBorde: '#D98D2F',
     imagen: require('../assets/images/tut_paso3.png'),
-    titulo: '¡Dato curioso!',
-    descripcion: 'Si aciertas, ¡ganarás una ⭐ y aprenderás algo increíble sobre lo que adivinaste!',
+    titulo: 'Mira el video',
+    descripcion: 'Un video corto ayuda a entender mejor la categoría.',
   },
   {
     numero: '4',
-    color: '#C39BD3',
-    colorBorde: '#A569BD',
+    color: '#88CC88',
+    colorBorde: '#5FA95F',
     imagen: require('../assets/images/tut_paso4.png'),
-    titulo: 'Tus resultados',
-    descripcion: 'Al terminar verás cuántas estrellas ganaste. ¡Intenta conseguirlas todas!',
+    titulo: 'Juega',
+    descripcion: 'Después entra al rompecabezas de siluetas.',
   },
 ];
-
-function BotonRegresar({ onPress }) {
-  return (
-    <TouchableOpacity style={styles.botonRegresar} onPress={onPress} activeOpacity={0.8}>
-      <Text style={styles.textoRegresar}>← Regresar</Text>
-    </TouchableOpacity>
-  );
-}
 
 export default function ComoJugar({ navigation }) {
   const [fontsLoaded] = useFonts({ Baloo2_700Bold, Baloo2_800ExtraBold });
@@ -66,16 +59,22 @@ export default function ComoJugar({ navigation }) {
 
   return (
     <LinearGradient
-      colors={['#E8F4FD', '#C5E3F7', '#A8D4F0']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
+      colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
       style={styles.fondo}
     >
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <SafeAreaView style={styles.contenido}>
-        <BotonRegresar onPress={() => navigation.goBack()} />
+        <CustomButton
+          label="Regresar"
+          onPress={() => navigation.goBack()}
+          variant="secondary"
+          style={{ alignSelf: 'flex-start', marginBottom: 10 }}
+        />
 
-        <Text style={styles.titulo}>¿Cómo se juega?</Text>
+        <Text style={styles.titulo}>Cómo jugar</Text>
+        <Text style={styles.subtituloPrincipal}>Una guía corta para entrar rápido a las categorías y al rompecabezas.</Text>
 
         <ScrollView
           ref={scrollRef}
@@ -100,23 +99,20 @@ export default function ComoJugar({ navigation }) {
               </View>
 
               <Text style={styles.descripcion}>{paso.descripcion}</Text>
-
-              {index < PASOS.length - 1 && (
-                <Text style={styles.flechaEntrada}>▼  ▼  ▼</Text>
-              )}
+              {index < PASOS.length - 1 && <Text style={styles.flechaEntrada}>Desliza</Text>}
             </View>
           ))}
 
           <View style={{ height: 20 }} />
         </ScrollView>
 
-        <TouchableOpacity
-          style={styles.botonAccion}
-          activeOpacity={0.8}
+        <CustomButton
+          label="IR A CATEGORÍAS"
           onPress={() => navigation.navigate('Categorias')}
-        >
-          <Text style={styles.textoBotonAccion}>¡LISTO, VAMOS!</Text>
-        </TouchableOpacity>
+          variant="primary"
+          fullWidth
+          style={{ marginTop: 12 }}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -130,28 +126,20 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
   },
-  botonRegresar: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#FFC400',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#1A3C5E',
-    elevation: 4,
-    marginBottom: 10,
-  },
-  textoRegresar: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 14,
-    color: '#1A3C5E',
-  },
   titulo: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 34,
     color: '#1A3C5E',
     textAlign: 'center',
     marginBottom: 14,
+  },
+  subtituloPrincipal: {
+    fontFamily: 'Baloo2_700Bold',
+    fontSize: 14,
+    color: 'rgba(26,60,94,0.78)',
+    textAlign: 'center',
+    marginBottom: 14,
+    lineHeight: 20,
   },
   scroll: { flex: 1 },
   scrollContenido: { paddingBottom: 8 },
@@ -168,7 +156,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    marginBottom: 18,
+    marginBottom: 14,
   },
   circuloNumero: {
     width: 48, height: 48, borderRadius: 24,
@@ -184,48 +172,29 @@ const styles = StyleSheet.create({
   },
   titulopaso: {
     fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 24, color: '#FFFFFF',
+    fontSize: 22, color: '#FFFFFF',
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   circuloImagen: {
-    width: width * 0.6, height: width * 0.6,
-    borderRadius: width * 0.3,
+    width: width * 0.54, height: width * 0.54,
+    borderRadius: width * 0.27,
     backgroundColor: 'rgba(255,255,255,0.45)',
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  imagen: { width: width * 0.46, height: width * 0.46 },
+  imagen: { width: width * 0.42, height: width * 0.42 },
   descripcion: {
     fontFamily: 'Baloo2_700Bold',
-    fontSize: 20, color: '#FFFFFF',
-    textAlign: 'center', lineHeight: 28,
+    fontSize: 18, color: '#FFFFFF',
+    textAlign: 'center', lineHeight: 25,
   },
   flechaEntrada: {
-    fontSize: 18,
+    fontFamily: 'Baloo2_700Bold',
+    fontSize: 13,
     color: 'rgba(255,255,255,0.7)',
-    marginTop: 16,
-    letterSpacing: 6,
-  },
-
-  botonAccion: {
-    backgroundColor: '#FFC400',
-    paddingVertical: 18,
-    borderRadius: 50,
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#1A3C5E',
-    shadowColor: '#1A3C5E',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.28,
-    shadowRadius: 0,
-    elevation: 7,
     marginTop: 12,
-  },
-  textoBotonAccion: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 22, color: '#1A3C5E',
-    letterSpacing: 0.5,
+    textAlign: 'center',
   },
 });

@@ -6,12 +6,15 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomButton from '../components/CustomButton';
+import StatusMark from '../components/StatusMark';
 
 const AVATARES = [
   { id: 1, imagen: require('../assets/images/avatar1.png') },
@@ -21,42 +24,55 @@ const AVATARES = [
   { id: 5, imagen: require('../assets/images/avatar5.png') },
 ];
 
-const CATEGORIAS_INFO = [
-  { id: 'animales',    nombre: 'Animales',        color: '#F47C7C', icono: require('../assets/images/cat_animales.png') },
-  { id: 'frutas',      nombre: 'Frutas',           color: '#FFB347', icono: require('../assets/images/cat_frutas.png') },
-  { id: 'transportes', nombre: 'Transportes',      color: '#4FC3D5', icono: require('../assets/images/cat_transportes.png') },
-  { id: 'utiles',      nombre: 'Útiles Escolares', color: '#88CC88', icono: require('../assets/images/cat_utiles.png') },
-];
-
 export default function PerfilScreen({ navigation }) {
   const [fontsLoaded] = useFonts({ Baloo2_700Bold, Baloo2_800ExtraBold });
-  const [perfil, setPerfil] = useState(null);
-  const [estrellas, setEstrellas] = useState({});
+  const [perfil, setPerfil]           = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  // Controla si se muestra el selector de avatar inline
+  const [cambiandoAvatar, setCambiandoAvatar] = useState(false);
+  const [avatarTemp, setAvatarTemp]   = useState(null);
 
-  useEffect(() => {
-    cargarDatos();
-  }, []);
+  useEffect(() => { cargarDatos(); }, []);
 
   const cargarDatos = async () => {
     try {
-      const perfilGuardado = await AsyncStorage.getItem('perfil');
-      const estrellasGuardadas = await AsyncStorage.getItem('estrellas');
-      if (perfilGuardado) setPerfil(JSON.parse(perfilGuardado));
-      if (estrellasGuardadas) setEstrellas(JSON.parse(estrellasGuardadas));
-    } catch (e) {}
+      const p = await AsyncStorage.getItem('perfil');
+      if (p) {
+        const parsed = JSON.parse(p);
+        setPerfil(parsed);
+        setAvatarTemp(parsed.avatarSeleccionado);
+      }
+    } catch (_) {}
+  };
+
+  // Guarda el nuevo avatar y cierra el selector
+  const guardarAvatar = async () => {
+    try {
+      const nuevo = { ...perfil, avatarSeleccionado: avatarTemp };
+      await AsyncStorage.setItem('perfil', JSON.stringify(nuevo));
+      setPerfil(nuevo);
+    } catch (_) {}
+    setCambiandoAvatar(false);
+  };
+
+  const cerrarSesion = async () => {
+    try {
+      await AsyncStorage.removeItem('perfil');
+      await AsyncStorage.removeItem('estrellas');
+    } catch (_) {}
+    setModalVisible(false);
+    navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
   };
 
   const avatarImg = perfil
-    ? AVATARES.find((a) => a.id === perfil.avatarSeleccionado)?.imagen
+    ? AVATARES.find(a => a.id === perfil.avatarSeleccionado)?.imagen
     : null;
-
-  const totalEstrellas = Object.values(estrellas).reduce((sum, v) => sum + v, 0);
 
   if (!fontsLoaded || !perfil) return null;
 
   return (
     <LinearGradient
-      colors={['#E8F4FD', '#C5E3F7', '#A8D4F0']}
+      colors={['#D0E8F2', '#B8DAF0', '#A0CCE8']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={styles.fondo}
@@ -64,61 +80,129 @@ export default function PerfilScreen({ navigation }) {
       <StatusBar style="dark" />
       <SafeAreaView style={styles.contenido}>
 
-        {/* Header */}
-        <TouchableOpacity style={styles.botonRegresar} onPress={() => navigation.goBack()}>
-          <Text style={styles.textoRegresar}>← Regresar</Text>
-        </TouchableOpacity>
+        <CustomButton
+          label="Regresar"
+          onPress={() => navigation.goBack()}
+          variant="secondary"
+          style={{ alignSelf: 'flex-start', marginBottom: 16 }}
+        />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
-          {/* Tarjeta principal del perfil */}
+          {/* Tarjeta principal de perfil */}
           <View style={styles.tarjetaPerfil}>
-            <View style={styles.circuloAvatarGrande}>
-              {avatarImg && (
-                <Image source={avatarImg} style={styles.avatarImg} resizeMode="cover" />
-              )}
+
+            {/* Avatar grande con botón de edición */}
+            <View style={styles.contenedorAvatar}>
+              <View style={styles.circuloAvatarGrande}>
+                {avatarImg && (
+                  <Image source={avatarImg} style={styles.avatarImg} resizeMode="cover" />
+                )}
+              </View>
+              {/* Botón de lápiz para abrir selector de avatar */}
+              <TouchableOpacity
+                style={styles.botonEditarAvatar}
+                onPress={() => setCambiandoAvatar(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.iconoEditar}>Editar</Text>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.nombreTexto}>{perfil.nombre}</Text>
             <Text style={styles.edadTexto}>{perfil.edad} años</Text>
 
-            <View style={styles.filaTotalEstrellas}>
-              <Text style={styles.estrella}>⭐</Text>
-              <Text style={styles.totalEstrellasTexto}>{totalEstrellas} estrellas en total</Text>
-            </View>
-
-            <TouchableOpacity
-              style={styles.botonCambiarAvatar}
-              onPress={() => navigation.navigate('CambiarAvatar')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.botonCambiarAvatarTexto}>🎨 Cambiar personaje</Text>
-            </TouchableOpacity>
+            <CustomButton
+              label="Cambiar personaje"
+              onPress={() => setCambiandoAvatar(true)}
+              variant="primary"
+              style={{ marginTop: 8 }}
+            />
           </View>
 
-          {/* Estrellas por categoría */}
-          <Text style={styles.subtituloSeccion}>Mis categorías</Text>
+          {/* Botón cerrar sesión */}
+          <CustomButton
+            label="Cambiar jugador"
+            onPress={() => setModalVisible(true)}
+            variant="danger"
+            fullWidth
+            style={{ marginTop: 16 }}
+          />
 
-          {CATEGORIAS_INFO.map((cat) => {
-            const estrellascat = estrellas[cat.id] || 0;
-            return (
-              <View key={cat.id} style={[styles.filaCat, { borderLeftColor: cat.color }]}>
-                <View style={[styles.iconoCatCirculo, { backgroundColor: cat.color }]}>
-                  <Image source={cat.icono} style={styles.iconoCat} resizeMode="contain" />
-                </View>
-                <Text style={styles.nombreCat}>{cat.nombre}</Text>
-                <View style={styles.estrellasFilaDerecha}>
-                  {[...Array(3)].map((_, i) => (
-                    <Text key={i} style={{ fontSize: 20, opacity: i < estrellascat ? 1 : 0.2 }}>⭐</Text>
-                  ))}
-                </View>
-              </View>
-            );
-          })}
-
-          <View style={{ height: 20 }} />
+          <View style={{ height: 24 }} />
         </ScrollView>
       </SafeAreaView>
+
+      {/* Modal selector de avatar */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={cambiandoAvatar}
+        onRequestClose={() => setCambiandoAvatar(false)}
+      >
+        <View style={styles.fondoModal}>
+          <View style={styles.tarjetaModal}>
+            <Text style={styles.tituloModal}>Elige tu personaje</Text>
+
+            <View style={styles.gridAvatares}>
+              {AVATARES.map(av => (
+                <TouchableOpacity
+                  key={av.id}
+                  onPress={() => setAvatarTemp(av.id)}
+                  style={[
+                    styles.opcionAvatar,
+                    avatarTemp === av.id && styles.opcionAvatarSeleccionada,
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Image source={av.imagen} style={styles.imgAvatar} resizeMode="cover" />
+                      {avatarTemp === av.id && <View style={styles.seleccionAvatar}><StatusMark variant="check" size={22} /></View>}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <CustomButton label="Guardar" onPress={guardarAvatar} variant="primary" fullWidth />
+            <CustomButton
+              label="Cancelar"
+              onPress={() => { setAvatarTemp(perfil.avatarSeleccionado); setCambiandoAvatar(false); }}
+              variant="secondary"
+              fullWidth
+              style={{ marginTop: 8 }}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal confirmación cambiar jugador */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.fondoModal}>
+          <View style={styles.tarjetaModal}>
+            <Image
+              source={require('../assets/images/mascota.png')}
+              style={styles.mascotaModal}
+              resizeMode="contain"
+            />
+            <Text style={styles.tituloModal}>¿Cambiar jugador?</Text>
+            <Text style={styles.subtituloModal}>
+              Se cerrará la sesión de{'\n'}
+              <Text style={styles.nombreModal}>{perfil.nombre}</Text>
+            </Text>
+            <CustomButton label="Sí, cambiar" onPress={cerrarSesion} variant="danger" fullWidth />
+            <CustomButton
+              label="No, quedarme"
+              onPress={() => setModalVisible(false)}
+              variant="secondary"
+              fullWidth
+              style={{ marginTop: 8 }}
+            />
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -126,126 +210,138 @@ export default function PerfilScreen({ navigation }) {
 const styles = StyleSheet.create({
   fondo: { flex: 1 },
   contenido: { flex: 1, paddingHorizontal: 20, paddingTop: 10 },
-
-  botonRegresar: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#FFC400',
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#1A3C5E',
-    elevation: 4,
-    marginBottom: 16,
-  },
-  textoRegresar: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 15,
-    color: '#1A3C5E',
-  },
-
   scroll: { paddingBottom: 20 },
 
-  // Tarjeta perfil
+  // Tarjeta perfil — blanca, sin bordes duros, sombra suave
   tarjetaPerfil: {
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderRadius: 28,
-    borderWidth: 3,
-    borderColor: 'rgba(26,60,94,0.15)',
-    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    padding: 28,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     elevation: 4,
+    shadowColor: '#A8C2DC',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+  },
+
+  // Avatar con botón de lápiz superpuesto
+  contenedorAvatar: {
+    position: 'relative',
+    marginBottom: 14,
   },
   circuloAvatarGrande: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    borderWidth: 5,
-    borderColor: '#FFC400',
+    borderWidth: 4,
+    borderColor: '#FFD166',
     overflow: 'hidden',
-    marginBottom: 14,
-    elevation: 6,
+    elevation: 4,
   },
   avatarImg: { width: '100%', height: '100%' },
+  botonEditarAvatar: {
+    position: 'absolute',
+    bottom: 0,
+    right: -4,
+    minWidth: 72,
+    height: 34,
+    borderRadius: 18,
+    backgroundColor: '#FFD166',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  iconoEditar: {
+    fontFamily: 'Baloo2_800ExtraBold',
+    fontSize: 11,
+    color: '#1A365D',
+  },
 
   nombreTexto: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 30,
-    color: '#1A3C5E',
+    color: '#1A365D',
   },
   edadTexto: {
     fontFamily: 'Baloo2_700Bold',
     fontSize: 16,
-    color: '#2E6B9E',
+    color: '#4A6FD4',
     marginTop: 2,
-    marginBottom: 12,
-  },
-  filaTotalEstrellas: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255,196,0,0.18)',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginBottom: 16,
-  },
-  estrella: { fontSize: 22 },
-  totalEstrellasTexto: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 16,
-    color: '#1A3C5E',
+    marginBottom: 8,
   },
 
-  botonCambiarAvatar: {
-    backgroundColor: '#FFC400',
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#1A3C5E',
-    elevation: 4,
-  },
-  botonCambiarAvatarTexto: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 15,
-    color: '#1A3C5E',
-  },
-
-  // Categorías
-  subtituloSeccion: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 22,
-    color: '#1A3C5E',
-    marginBottom: 12,
-  },
-  filaCat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderRadius: 18,
-    borderLeftWidth: 6,
-    padding: 12,
-    marginBottom: 10,
-    elevation: 3,
-    gap: 12,
-  },
-  iconoCatCirculo: {
-    width: 46, height: 46,
-    borderRadius: 23,
+  // Modal base
+  fondoModal: {
+    flex: 1,
+    backgroundColor: 'rgba(26,54,93,0.5)',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 28,
   },
-  iconoCat: { width: 30, height: 30 },
-  nombreCat: {
+  tarjetaModal: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    padding: 28,
+    alignItems: 'center',
+    width: '100%',
+    elevation: 10,
+    gap: 10,
+  },
+  tituloModal: {
+    fontFamily: 'Baloo2_800ExtraBold',
+    fontSize: 22,
+    color: '#1A365D',
+    textAlign: 'center',
+  },
+  subtituloModal: {
     fontFamily: 'Baloo2_700Bold',
     fontSize: 16,
-    color: '#1A3C5E',
-    flex: 1,
+    color: '#4A6FD4',
+    textAlign: 'center',
+    lineHeight: 24,
   },
-  estrellasFilaDerecha: {
+  nombreModal: {
+    fontFamily: 'Baloo2_800ExtraBold',
+    color: '#1A365D',
+  },
+  mascotaModal: { width: 90, height: 90 },
+
+  // Grid de avatares en el modal
+  gridAvatares: {
     flexDirection: 'row',
-    gap: 2,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 14,
+    marginVertical: 8,
+  },
+  opcionAvatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 3,
+    borderColor: 'transparent',
+    backgroundColor: '#F4F7FB',
+    elevation: 2,
+  },
+  opcionAvatarSeleccionada: {
+    borderColor: '#FFD166',
+    backgroundColor: '#FFF8E1',
+  },
+  imgAvatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 36,
+  },
+  seleccionAvatar: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
   },
 });
