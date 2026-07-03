@@ -28,7 +28,7 @@ const NIVELES = [
     color: require('../assets/images/gato color.png'),
     pista: 'Le encanta dormir y ronronear.',
     dato: 'Los gatos usan sus bigotes para medir espacios y orientarse.',
-    opciones: ['Gato', 'Perro', 'Vaca'],
+    opciones: ['Gato', 'Perro', 'Conejo'],
   },
   {
     id: 'perro-1',
@@ -37,7 +37,7 @@ const NIVELES = [
     color: require('../assets/images/perro color.png'),
     pista: 'Es el mejor amigo del humano.',
     dato: 'Los perros tienen un olfato muy fuerte y aprenden con mucha práctica.',
-    opciones: ['Perro', 'León', 'Jirafa'],
+    opciones: ['Perro', 'León', 'Elefante'],
   },
   {
     id: 'leon-1',
@@ -46,16 +46,25 @@ const NIVELES = [
     color: require('../assets/images/leon color.png'),
     pista: 'Es el rey de la selva.',
     dato: 'Los leones viven en grupos llamados manadas.',
-    opciones: ['León', 'Cocodrilo', 'Vaca'],
+    opciones: ['León', 'Vaca', 'Gato'],
   },
   {
-    id: 'cocodrilo-1',
-    nombre: 'Cocodrilo',
-    silueta: require('../assets/images/cocodrilo silueta.png'),
-    color: require('../assets/images/cocodrilo color.png'),
-    pista: 'Tiene dientes muy afilados y vive en el agua.',
-    dato: 'Los cocodrilos pueden quedarse muy quietos para cazar.',
-    opciones: ['Cocodrilo', 'Jirafa', 'Gato'],
+    id: 'conejo-1',
+    nombre: 'Conejo',
+    silueta: require('../assets/images/conejo silueta.png'),
+    color: require('../assets/images/conejo color.png'),
+    pista: 'Tiene orejas muy largas y salta mucho.',
+    dato: 'Los conejos se comunican golpeando el suelo con sus patas traseras.',
+    opciones: ['Conejo', 'Jirafa', 'Perro'],
+  },
+  {
+    id: 'elefante-1',
+    nombre: 'Elefante',
+    silueta: require('../assets/images/elefante silueta.png'),
+    color: require('../assets/images/elefante color.png'),
+    pista: 'Tiene una trompa muy larga y orejas enormes.',
+    dato: 'Los elefantes son los animales terrestres más grandes del mundo.',
+    opciones: ['Elefante', 'León', 'Vaca'],
   },
   {
     id: 'jirafa-1',
@@ -64,7 +73,7 @@ const NIVELES = [
     color: require('../assets/images/jirafa color.png'),
     pista: 'Tiene el cuello más largo de todos.',
     dato: 'Las jirafas comen hojas de árboles muy altos.',
-    opciones: ['Jirafa', 'Perro', 'León'],
+    opciones: ['Jirafa', 'Conejo', 'Elefante'],
   },
   {
     id: 'vaca-1',
@@ -73,43 +82,16 @@ const NIVELES = [
     color: require('../assets/images/vaca color.png'),
     pista: 'Nos da leche y vive en el campo.',
     dato: 'Las vacas mastican varias veces para digerir mejor la comida.',
-    opciones: ['Vaca', 'Gato', 'Cocodrilo'],
+    opciones: ['Vaca', 'Conejo', 'León'],
   },
   {
-    id: 'gato-2',
-    nombre: 'Gato',
-    silueta: require('../assets/images/gato silueta.png'),
-    color: require('../assets/images/gato color.png'),
-    pista: 'Se limpia lamiéndose el pelaje.',
-    dato: 'Los gatos son muy limpios y duermen muchas horas al día.',
-    opciones: ['Gato', 'Jirafa', 'Perro'],
-  },
-  {
-    id: 'perro-2',
-    nombre: 'Perro',
-    silueta: require('../assets/images/perro silueta.png'),
-    color: require('../assets/images/perro color.png'),
-    pista: 'Puede aprender trucos y cuidar hogares.',
-    dato: 'Los perros entienden gestos, voces y rutinas con facilidad.',
-    opciones: ['Perro', 'Vaca', 'León'],
-  },
-  {
-    id: 'leon-2',
-    nombre: 'León',
-    silueta: require('../assets/images/leon silueta.png'),
-    color: require('../assets/images/leon color.png'),
-    pista: 'Su rugido se escucha muy lejos.',
-    dato: 'El rugido del león sirve para comunicarse y asustar a otros animales.',
-    opciones: ['León', 'Gato', 'Jirafa'],
-  },
-  {
-    id: 'jirafa-2',
-    nombre: 'Jirafa',
-    silueta: require('../assets/images/jirafa silueta.png'),
-    color: require('../assets/images/jirafa color.png'),
-    pista: 'Su lengua es muy larga para comer hojas.',
-    dato: 'La lengua de la jirafa puede ayudarla a alcanzar hojas altas con facilidad.',
-    opciones: ['Jirafa', 'Vaca', 'Cocodrilo'],
+    id: 'cocodrilo-1',
+    nombre: 'Cocodrilo',
+    silueta: require('../assets/images/cocodrilo silueta.png'),
+    color: require('../assets/images/cocodrilo color.png'),
+    pista: 'Tiene dientes muy afilados y vive en el agua.',
+    dato: 'Los cocodrilos pueden quedarse muy quietos para cazar.',
+    opciones: ['Cocodrilo', 'Elefante', 'Conejo'],
   },
 ];
 
@@ -245,7 +227,7 @@ export default function AnimalesScreen({ navigation }) {
             <Text style={styles.subtituloFin}>Ganaste {puntos} estrellas.</Text>
 
             <View style={styles.filaEstrellasFin}>
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                 <Image
                   key={i}
                   source={require('../assets/images/estrella.png')}
