@@ -1,83 +1,99 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   Image,
-  Dimensions,
   Animated,
   Easing,
+  Dimensions,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
+import { useStars } from '../context/StarContext';
+import CustomButton from '../components/CustomButton';
+import StatusMark from '../components/StatusMark';
 
 const { width } = Dimensions.get('window');
 
-const TODOS_LOS_ANIMALES = [
+const NIVELES = [
   {
-    id: 1,
+    id: 'gato-1',
     nombre: 'Gato',
     silueta: require('../assets/images/gato silueta.png'),
     color: require('../assets/images/gato color.png'),
-    pista: 'Le encanta dormir y ronronear',
-    distractores: ['Perro', 'Conejo'],
+    pista: 'Le encanta dormir y ronronear.',
+    dato: 'Los gatos usan sus bigotes para medir espacios y orientarse.',
+    opciones: ['Gato', 'Perro', 'Conejo'],
   },
   {
-    id: 2,
+    id: 'perro-1',
     nombre: 'Perro',
     silueta: require('../assets/images/perro silueta.png'),
     color: require('../assets/images/perro color.png'),
-    pista: 'Es el mejor amigo del humano',
-    distractores: ['Lobo', 'Gato'],
+    pista: 'Es el mejor amigo del humano.',
+    dato: 'Los perros tienen un olfato muy fuerte y aprenden con mucha práctica.',
+    opciones: ['Perro', 'León', 'Elefante'],
   },
   {
-    id: 3,
+    id: 'leon-1',
     nombre: 'León',
     silueta: require('../assets/images/leon silueta.png'),
     color: require('../assets/images/leon color.png'),
-    pista: 'Es el rey de la selva',
-    distractores: ['Tigre', 'Leopardo'],
+    pista: 'Es el rey de la selva.',
+    dato: 'Los leones viven en grupos llamados manadas.',
+    opciones: ['León', 'Vaca', 'Gato'],
   },
   {
-    id: 4,
-    nombre: 'Cocodrilo',
-    silueta: require('../assets/images/cocodrilo silueta.png'),
-    color: require('../assets/images/cocodrilo color.png'),
-    pista: 'Tiene dientes muy afilados y vive en el agua',
-    distractores: ['Lagarto', 'Iguana'],
+    id: 'conejo-1',
+    nombre: 'Conejo',
+    silueta: require('../assets/images/conejo silueta.png'),
+    color: require('../assets/images/conejo color.png'),
+    pista: 'Tiene orejas muy largas y salta mucho.',
+    dato: 'Los conejos se comunican golpeando el suelo con sus patas traseras.',
+    opciones: ['Conejo', 'Jirafa', 'Perro'],
   },
   {
-    id: 5,
+    id: 'elefante-1',
+    nombre: 'Elefante',
+    silueta: require('../assets/images/elefante silueta.png'),
+    color: require('../assets/images/elefante color.png'),
+    pista: 'Tiene una trompa muy larga y orejas enormes.',
+    dato: 'Los elefantes son los animales terrestres más grandes del mundo.',
+    opciones: ['Elefante', 'León', 'Vaca'],
+  },
+  {
+    id: 'jirafa-1',
     nombre: 'Jirafa',
     silueta: require('../assets/images/jirafa silueta.png'),
     color: require('../assets/images/jirafa color.png'),
-    pista: 'Tiene el cuello más largo de todos',
-    distractores: ['Camello', 'Caballo'],
+    pista: 'Tiene el cuello más largo de todos.',
+    dato: 'Las jirafas comen hojas de árboles muy altos.',
+    opciones: ['Jirafa', 'Conejo', 'Elefante'],
   },
   {
-    id: 6,
+    id: 'vaca-1',
     nombre: 'Vaca',
     silueta: require('../assets/images/vaca silueta.png'),
     color: require('../assets/images/vaca color.png'),
-    pista: 'Nos da leche y vive en el campo',
-    distractores: ['Toro', 'Cabra'],
+    pista: 'Nos da leche y vive en el campo.',
+    dato: 'Las vacas mastican varias veces para digerir mejor la comida.',
+    opciones: ['Vaca', 'Conejo', 'León'],
+  },
+  {
+    id: 'cocodrilo-1',
+    nombre: 'Cocodrilo',
+    silueta: require('../assets/images/cocodrilo silueta.png'),
+    color: require('../assets/images/cocodrilo color.png'),
+    pista: 'Tiene dientes muy afilados y vive en el agua.',
+    dato: 'Los cocodrilos pueden quedarse muy quietos para cazar.',
+    opciones: ['Cocodrilo', 'Elefante', 'Conejo'],
   },
 ];
-
-function mezclar(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
-}
-
-function generarRondas() {
-  const seleccionados = mezclar(TODOS_LOS_ANIMALES).slice(0, 3);
-  return seleccionados.map(animal => ({
-    ...animal,
-    opciones: mezclar([animal.nombre, ...animal.distractores]),
-  }));
-}
 
 function useFlote(distancia, duracion, delay = 0) {
   const valor = useRef(new Animated.Value(0)).current;
@@ -90,216 +106,226 @@ function useFlote(distancia, duracion, delay = 0) {
     );
     anim.start();
     return () => anim.stop();
-  }, []);
+  }, [delay, duracion, valor]);
   return valor.interpolate({ inputRange: [0, 1], outputRange: [0, -distancia] });
 }
 
 export default function AnimalesScreen({ navigation }) {
   const [fontsLoaded] = useFonts({ Baloo2_700Bold, Baloo2_800ExtraBold });
-  const [rondas, setRondas] = useState(() => generarRondas());
-  const [rondaActual, setRondaActual] = useState(0);
-  const [estrellas, setEstrellas] = useState(0);
-  const [respondido, setRespondido] = useState(null);
-  const [opcionElegida, setOpcionElegida] = useState(null);
-  const [terminado, setTerminado] = useState(false);
-  const [mostrarColor, setMostrarColor] = useState(false);
+  const { actualizarEstrellas } = useStars();
 
-  const escalaEstrella = useRef(new Animated.Value(1)).current;
+  const [indiceNivel, setIndiceNivel] = useState(0);
+  const [puntos, setPuntos] = useState(0);
+  const [respuesta, setRespuesta] = useState(null);
+  const [opcionElegida, setOpcionElegida] = useState(null);
+  const [mostrarColor, setMostrarColor] = useState(false);
+  const [mostrarDato, setMostrarDato] = useState(false);
+  const [finalizado, setFinalizado] = useState(false);
+
   const escalaImagen = useRef(new Animated.Value(1)).current;
   const opacidadImagen = useRef(new Animated.Value(1)).current;
-  const flotarImagen = useFlote(7, 2400, 0);
+  const escalaFeedback = useRef(new Animated.Value(0.92)).current;
+
+  const flote1 = useFlote(10, 2600, 0);
+  const flote2 = useFlote(14, 3200, 300);
+  const flote3 = useFlote(8, 2800, 500);
+
+  const nivel = NIVELES[indiceNivel];
+  const totalNiveles = NIVELES.length;
+
+  useEffect(() => {
+    if (finalizado) {
+      actualizarEstrellas('animales', puntos);
+    }
+  }, [actualizarEstrellas, finalizado, puntos]);
 
   if (!fontsLoaded) return null;
 
-  const ronda = rondas[rondaActual];
-
-  const animarEstrella = () => {
-    Animated.sequence([
-      Animated.spring(escalaEstrella, { toValue: 1.5, useNativeDriver: true, speed: 40 }),
-      Animated.spring(escalaEstrella, { toValue: 1, useNativeDriver: true, friction: 4 }),
-    ]).start();
+  const reiniciar = () => {
+    setIndiceNivel(0);
+    setPuntos(0);
+    setRespuesta(null);
+    setOpcionElegida(null);
+    setMostrarColor(false);
+    setMostrarDato(false);
+    setFinalizado(false);
+    opacidadImagen.setValue(1);
+    escalaImagen.setValue(1);
+    escalaFeedback.setValue(0.92);
   };
 
-  const animarCambioImagen = (callback) => {
+  const avanzarNivel = () => {
+    if (indiceNivel + 1 >= totalNiveles) {
+      setFinalizado(true);
+      return;
+    }
+
+    setIndiceNivel((valor) => valor + 1);
+    setRespuesta(null);
+    setOpcionElegida(null);
+    setMostrarColor(false);
+    setMostrarDato(false);
+    opacidadImagen.setValue(1);
+    escalaImagen.setValue(1);
+    escalaFeedback.setValue(0.92);
+  };
+
+  const animarCambio = (callback) => {
     Animated.sequence([
       Animated.parallel([
-        Animated.timing(opacidadImagen, { toValue: 0, duration: 200, useNativeDriver: true }),
-        Animated.timing(escalaImagen, { toValue: 0.85, duration: 200, useNativeDriver: true }),
+        Animated.timing(opacidadImagen, { toValue: 0, duration: 160, useNativeDriver: true }),
+        Animated.timing(escalaImagen, { toValue: 0.9, duration: 160, useNativeDriver: true }),
       ]),
     ]).start(() => {
       callback();
       Animated.parallel([
-        Animated.timing(opacidadImagen, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(opacidadImagen, { toValue: 1, duration: 250, useNativeDriver: true }),
         Animated.spring(escalaImagen, { toValue: 1, friction: 4, useNativeDriver: true }),
+        Animated.spring(escalaFeedback, { toValue: 1, friction: 5, useNativeDriver: true }),
       ]).start();
     });
   };
 
   const elegir = (opcion) => {
-    if (respondido) return;
-    setOpcionElegida(opcion);
-    const correcto = opcion === ronda.nombre;
-    setRespondido(correcto ? 'correcto' : 'incorrecto');
-    animarCambioImagen(() => setMostrarColor(true));
+    if (respuesta) return;
 
-    if (correcto) {
-      animarEstrella();
-      setEstrellas(e => e + 1);
-    }
+    setOpcionElegida(opcion);
+    const correcto = opcion === nivel.nombre;
+    setRespuesta(correcto ? 'correcto' : 'incorrecto');
+    if (correcto) setPuntos((valor) => valor + 1);
+
+    animarCambio(() => {
+      setMostrarColor(true);
+      setMostrarDato(true);
+    });
 
     setTimeout(() => {
-      if (rondaActual + 1 >= rondas.length) {
-        setTerminado(true);
-      } else {
-        setRondaActual(r => r + 1);
-        setRespondido(null);
-        setOpcionElegida(null);
-        setMostrarColor(false);
-      }
-    }, 1400);
+      avanzarNivel();
+    }, 1600);
   };
 
-  const reiniciar = () => {
-    setRondas(generarRondas());
-    setRondaActual(0);
-    setEstrellas(0);
-    setRespondido(null);
-    setOpcionElegida(null);
-    setTerminado(false);
-    setMostrarColor(false);
-  };
+  const estadoFinal = respuesta === 'correcto' ? 'correcto' : respuesta === 'incorrecto' ? 'incorrecto' : null;
+  const mensajeFeedback = respuesta === 'correcto'
+    ? 'Correcto'
+    : respuesta === 'incorrecto'
+      ? `Era ${nivel.nombre}`
+      : '';
 
-  const colorOpcion = (opcion) => {
-    if (!respondido || opcionElegida !== opcion) return 'rgba(255,255,255,0.75)';
-    return respondido === 'correcto' ? '#88CC88' : '#F47C7C';
-  };
-
-  const borderOpcion = (opcion) => {
-    if (!respondido || opcionElegida !== opcion) return 'rgba(26,60,94,0.2)';
-    return respondido === 'correcto' ? '#4AAE4A' : '#D45A5A';
-  };
-
-  // ── Pantalla final ──
-  if (terminado) {
+  if (finalizado) {
     return (
       <LinearGradient
-        colors={['#E8F4FD', '#C5E3F7', '#A8D4F0']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
         style={styles.fondo}
       >
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <SafeAreaView style={styles.contenidoFin}>
           <View style={styles.cuerpoFin}>
-            <Text style={styles.emojiGrande}>
-              {estrellas === 3 ? '🏆' : estrellas >= 2 ? '😄' : '💪'}
-            </Text>
-            <Text style={styles.tituloFin}>
-              {estrellas === 3 ? '¡Perfecto!' : estrellas >= 2 ? '¡Muy bien!' : '¡Sigue practicando!'}
-            </Text>
-            <Text style={styles.subtituloFin}>Conseguiste {estrellas} de 3 estrellas</Text>
+            <Text style={styles.tituloFin}>¡Muy bien!</Text>
+            <Text style={styles.subtituloFin}>Terminaste los {totalNiveles} niveles de animales.</Text>
+            <Text style={styles.subtituloFin}>Ganaste {puntos} estrellas.</Text>
+
             <View style={styles.filaEstrellasFin}>
-              {[0, 1, 2].map(i => (
-                <Text key={i} style={{ fontSize: 44 }}>{i < estrellas ? '⭐' : '☆'}</Text>
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <Image
+                  key={i}
+                  source={require('../assets/images/estrella.png')}
+                  style={[styles.estrellaFin, i >= puntos && styles.estrellaFinVacia]}
+                  resizeMode="contain"
+                />
               ))}
             </View>
-            <TouchableOpacity style={styles.botonFin} onPress={reiniciar}>
-              <Text style={styles.textoBotonFin}>🔄 Jugar de nuevo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.botonFin, styles.botonSalir]} onPress={() => navigation.goBack()}>
-              <Text style={[styles.textoBotonFin, { color: '#1A3C5E' }]}>← Volver</Text>
-            </TouchableOpacity>
+
+            <CustomButton label="Jugar otra vez" onPress={reiniciar} variant="primary" fullWidth />
+            <CustomButton label="Volver al menú" onPress={() => navigation.goBack()} variant="secondary" fullWidth style={{ marginTop: 8 }} />
           </View>
         </SafeAreaView>
       </LinearGradient>
     );
   }
 
-  // ── Pantalla de juego ──
   return (
     <LinearGradient
-      colors={['#E8F4FD', '#C5E3F7', '#A8D4F0']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
+      colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
       style={styles.fondo}
     >
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
+
+      <Animated.View style={[styles.burbuja, styles.burbuja1, { transform: [{ translateY: flote1 }] }]} />
+      <Animated.View style={[styles.burbuja, styles.burbuja2, { transform: [{ translateY: flote2 }] }]} />
+      <Animated.View style={[styles.burbuja, styles.burbuja3, { transform: [{ translateY: flote3 }] }]} />
+
       <SafeAreaView style={styles.contenido}>
-
-        {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.botonRegresar} onPress={() => navigation.goBack()}>
-            <Text style={styles.textoRegresar}>← Regresar</Text>
-          </TouchableOpacity>
-          <Animated.View style={[styles.badgeEstrella, { transform: [{ scale: escalaEstrella }] }]}>
-            <Text style={styles.badgeIcon}>⭐</Text>
-            <Text style={styles.badgeNum}>{estrellas}</Text>
-          </Animated.View>
-        </View>
-
-        {/* Título + progreso */}
-        <Text style={styles.titulo}>🐾 Animales</Text>
-        <View style={styles.progresoPuntos}>
-          {rondas.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.punto,
-                i === rondaActual && styles.puntoActivo,
-                i < rondaActual && styles.puntoHecho,
-              ]}
-            />
-          ))}
-        </View>
-        <Text style={styles.textoRonda}>Ronda {rondaActual + 1} de {rondas.length}</Text>
-
-        {/* Tarjeta silueta — estilo igual a tarjetas de categorías */}
-        <View style={styles.tarjetaSilueta}>
-          <View style={styles.circuloImagen}>
-            <Animated.View style={{
-              transform: [
-                { translateY: flotarImagen },
-                { scale: escalaImagen },
-              ],
-              opacity: opacidadImagen,
-            }}>
-              <Image
-                source={mostrarColor ? ronda.color : ronda.silueta}
-                style={styles.silueta}
-                resizeMode="contain"
-              />
-            </Animated.View>
+          <CustomButton label="Regresar" onPress={() => navigation.goBack()} variant="secondary" />
+          <View style={styles.progresoCabecera}>
+            <Text style={styles.progresoTexto}>Nivel {indiceNivel + 1}/{totalNiveles}</Text>
+            <Text style={styles.progresoTexto}>Estrellas {puntos}</Text>
           </View>
-          <Text style={styles.textoPista}>📍 {ronda.pista}</Text>
         </View>
 
-        {/* Pregunta */}
-        <Text style={styles.pregunta}>¿Cuál es este animal? 🔍</Text>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+          <View style={styles.bloqueIntro}>
+            <Image source={require('../assets/images/mascota.png')} style={styles.introImg} resizeMode="contain" />
+            <View style={styles.globoIntro}>
+              <Text style={styles.textoIntro}>Mira la silueta, elige la respuesta correcta y gana una estrella.</Text>
+            </View>
+          </View>
 
-        {/* Opciones */}
-        <View style={styles.opciones}>
-          {ronda.opciones.map((op, i) => (
-            <TouchableOpacity
-              key={op}
-              style={[
-                styles.botonOpcion,
-                { backgroundColor: colorOpcion(op), borderColor: borderOpcion(op) },
-              ]}
-              onPress={() => elegir(op)}
-              activeOpacity={0.8}
-              disabled={!!respondido}
-            >
-              <Text style={styles.numeroOpcion}>{i + 1}.</Text>
-              <Text style={styles.textoOpcion}>{op}</Text>
-              {respondido && opcionElegida === op && (
-                <Text style={styles.iconoRespuesta}>
-                  {respondido === 'correcto' ? '✓' : '✗'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
+          <Text style={styles.titulo}>Adivina la Silueta</Text>
+          <Text style={styles.subtitulo}>Una actividad simple para observar, responder y aprender.</Text>
 
+          <View style={styles.tarjetaSilueta}>
+            <View style={styles.circuloImagen}>
+              <Animated.View style={{
+                transform: [{ scale: escalaImagen }],
+                opacity: opacidadImagen,
+              }}>
+                <Image
+                  source={mostrarColor ? nivel.color : nivel.silueta}
+                  style={styles.silueta}
+                  resizeMode="contain"
+                />
+              </Animated.View>
+            </View>
+            <Text style={styles.textoPista}>Pista: {nivel.pista}</Text>
+          </View>
+
+          {mostrarDato && (
+            <Animated.View style={[styles.feedback, estadoFinal === 'correcto' ? styles.feedbackCorrecto : styles.feedbackIncorrecto, { transform: [{ scale: escalaFeedback }] }]}>
+              <View style={styles.filaFeedback}>
+                {estadoFinal === 'correcto' ? <StatusMark variant="check" size={24} /> : <View style={styles.mensajeIncorrecto}><Text style={styles.textoMensajeIncorrecto}>!</Text></View>}
+                <Text style={styles.tituloFeedback}>{mensajeFeedback}</Text>
+              </View>
+              <Text style={styles.textoFeedback}>{nivel.dato}</Text>
+            </Animated.View>
+          )}
+
+          <Text style={styles.pregunta}>¿Cuál animal es?</Text>
+
+          <View style={styles.opciones}>
+            {nivel.opciones.map((opcion) => {
+              const seleccionada = opcionElegida === opcion;
+              const colorBase = !respuesta || !seleccionada ? 'rgba(255,255,255,0.75)' : (respuesta === 'correcto' ? '#88CC88' : '#F47C7C');
+              const bordeBase = !respuesta || !seleccionada ? 'rgba(26,60,94,0.2)' : (respuesta === 'correcto' ? '#4AAE4A' : '#D45A5A');
+
+              return (
+                <TouchableOpacity
+                  key={opcion}
+                  style={[styles.botonOpcion, { backgroundColor: colorBase, borderColor: bordeBase }]}
+                  onPress={() => elegir(opcion)}
+                  activeOpacity={0.84}
+                  disabled={!!respuesta}
+                >
+                  <Text style={styles.textoOpcion}>{opcion}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -307,90 +333,76 @@ export default function AnimalesScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   fondo: { flex: 1 },
-  contenido: { flex: 1, paddingHorizontal: 20, paddingTop: 10 },
+  contenido: { flex: 1, paddingTop: 10 },
   contenidoFin: { flex: 1, paddingHorizontal: 20, paddingTop: 10 },
+  scroll: { paddingHorizontal: 20, paddingBottom: 20 },
 
-  // Header
+  burbuja: { position: 'absolute', borderRadius: 999 },
+  burbuja1: { width: 120, height: 120, top: 40, left: -40, backgroundColor: 'rgba(255,255,255,0.10)' },
+  burbuja2: { width: 80, height: 80, top: 180, right: -20, backgroundColor: 'rgba(255,255,255,0.08)' },
+  burbuja3: { width: 60, height: 60, bottom: 200, left: 20, backgroundColor: 'rgba(255,255,255,0.07)' },
+
   header: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  progresoCabecera: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
     alignItems: 'center',
-    marginBottom: 8,
   },
-  botonRegresar: {
-    backgroundColor: '#FFC400',
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#1A3C5E',
-    shadowColor: '#1A3C5E',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.22,
-    shadowRadius: 0,
-    elevation: 4,
+  progresoTexto: {
+    fontFamily: 'Baloo2_700Bold',
+    fontSize: 12,
+    color: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
   },
-  textoRegresar: {
+
+  bloqueIntro: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+    marginBottom: 14,
+  },
+  introImg: { width: 90, height: 90 },
+  globoIntro: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 20,
+    borderTopLeftRadius: 4,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.35)',
+  },
+  textoIntro: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 15,
-    color: '#1A3C5E',
+    color: '#FFFFFF',
+    lineHeight: 22,
   },
-  badgeEstrella: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFC400',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderWidth: 3,
-    borderColor: '#1A3C5E',
-    gap: 6,
-    elevation: 4,
-  },
-  badgeIcon: { fontSize: 18 },
-  badgeNum: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 18,
-    color: '#1A3C5E',
-  },
-
-  // Título
   titulo: {
     fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 26,
-    color: '#1A3C5E',
+    fontSize: 28,
+    color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 10,
   },
-
-  // Progreso
-  progresoPuntos: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 4,
-  },
-  punto: {
-    width: 28, height: 12,
-    borderRadius: 6,
-    backgroundColor: 'rgba(26,60,94,0.15)',
-  },
-  puntoActivo: {
-    backgroundColor: '#1A3C5E',
-    width: 36,
-  },
-  puntoHecho: {
-    backgroundColor: '#FFC400',
-  },
-  textoRonda: {
+  subtitulo: {
     fontFamily: 'Baloo2_700Bold',
-    fontSize: 13,
-    color: '#2E6B9E',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.88)',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 14,
   },
-
-  // Tarjeta 
   tarjetaSilueta: {
     borderRadius: 28,
     borderWidth: 3,
@@ -400,14 +412,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 12,
     shadowColor: '#1A3C5E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 5,
   },
-  // Círculo interior 
   circuloImagen: {
     width: width * 0.58,
     height: width * 0.58,
@@ -421,9 +432,7 @@ const styles = StyleSheet.create({
   silueta: {
     width: width * 0.72,
     height: width * 0.52,
-    
   },
-    
   textoPista: {
     fontFamily: 'Baloo2_700Bold',
     fontSize: 13,
@@ -434,8 +443,51 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-
-  // Pregunta
+  feedback: {
+    borderRadius: 24,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+  },
+  feedbackCorrecto: {
+    backgroundColor: 'rgba(136,204,136,0.95)',
+    borderColor: '#4AAE4A',
+  },
+  feedbackIncorrecto: {
+    backgroundColor: 'rgba(244,124,124,0.95)',
+    borderColor: '#D45A5A',
+  },
+  filaFeedback: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
+  },
+  tituloFeedback: {
+    fontFamily: 'Baloo2_800ExtraBold',
+    fontSize: 18,
+    color: '#1A3C5E',
+  },
+  textoFeedback: {
+    fontFamily: 'Baloo2_700Bold',
+    fontSize: 14,
+    color: '#1A3C5E',
+    lineHeight: 20,
+  },
+  mensajeIncorrecto: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#1A3C5E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textoMensajeIncorrecto: {
+    fontFamily: 'Baloo2_800ExtraBold',
+    fontSize: 16,
+    color: '#FFFFFF',
+    lineHeight: 18,
+  },
   pregunta: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 19,
@@ -443,81 +495,51 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
-
-  // Opciones 
   opciones: { gap: 10 },
   botonOpcion: {
-    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 18,
     borderWidth: 3,
-    gap: 12,
-  },
-  numeroOpcion: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 17,
-    color: '#1A3C5E',
-    width: 24,
   },
   textoOpcion: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 17,
     color: '#1A3C5E',
-    flex: 1,
+    textAlign: 'center',
   },
-  iconoRespuesta: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#1A3C5E',
-  },
-
-  // Pantalla final
   cuerpoFin: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 14,
   },
-  emojiGrande: { fontSize: 72 },
   tituloFin: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 30,
-    color: '#1A3C5E',
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   subtituloFin: {
     fontFamily: 'Baloo2_700Bold',
     fontSize: 17,
-    color: '#2E6B9E',
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
   },
   filaEstrellasFin: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 6,
     marginVertical: 8,
+    maxWidth: 240,
   },
-  botonFin: {
-    backgroundColor: '#FFC400',
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 50,
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#1A3C5E',
-    shadowColor: '#1A3C5E',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.25,
-    elevation: 6,
+  estrellaFin: {
+    width: 28,
+    height: 28,
   },
-  botonSalir: {
-    backgroundColor: 'rgba(255,255,255,0.75)',
+  estrellaFinVacia: {
+    tintColor: 'rgba(255,255,255,0.35)',
   },
-  textoBotonFin: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 18,
-    color: '#1A3C5E',
-  },
-  
 });
