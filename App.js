@@ -11,6 +11,10 @@ import MenuScreen      from './screens/MenuScreen';
 import CategoriaDetalleScreen from './screens/CategoriaDetalleScreen';
 import PerfilScreen    from './screens/PerfilScreen';
 import AnimalesScreen  from './screens/AnimalesScreen';
+import NaturalezaScreen  from './screens/NaturalezaScreen';
+import UtilesScreen from './screens/UtilesScreen';
+import VehiculosScreen from './screens/VehiculosScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +32,9 @@ function AppNavigator() {
       <Stack.Screen name="CategoriaDetalle" component={CategoriaDetalleScreen} />
       <Stack.Screen name="Perfil"     component={PerfilScreen} />
       <Stack.Screen name="Animales"   component={AnimalesScreen} />
+      <Stack.Screen name="Naturaleza"  component={NaturalezaScreen} />
+      <Stack.Screen name="Utiles"     component={UtilesScreen} />
+      <Stack.Screen name="Vehiculos"  component={VehiculosScreen} />
     </Stack.Navigator>
   );
 }

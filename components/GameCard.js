@@ -9,7 +9,7 @@ import {
 import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 
 const theme = {
-  cardActiveShadow: '#D64545',   // sombra coral oscuro para tarjeta activa
+  //cardActiveShadow: '#D64545',   // sombra coral oscuro para tarjeta activa
   cardLockedBg:     '#D6E4F0',   // azul pastel para bloqueadas
   cardLockedShadow: '#A8C2DC',   // azul pastel oscuro para sombra bloqueada
   lockIcon:         '#FFD166',
@@ -75,7 +75,10 @@ export default function GameCard({
 
       {/* Etiqueta de subtipo */}
       <View style={[styles.etiqueta, horizontal && styles.etiquetaH, pendiente && styles.etiquetaBloqueada]}>
-        <Text style={[styles.etiquetaTexto, pendiente && styles.etiquetaTextoBloqueado]}>
+        <Text style={[styles.etiquetaTexto, pendiente && styles.etiquetaTextoBloqueado]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.75}>
           {subtipo}
         </Text>
       </View>
@@ -160,6 +163,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 5,
     marginTop: 6,
+    alignItems: 'center',
   },
   etiquetaH: { marginTop: 0, alignSelf: 'center' },
   etiquetaBloqueada: { backgroundColor: 'rgba(26,54,93,0.10)' },
@@ -167,6 +171,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Baloo2_700Bold',
     fontSize: 12,
     color: theme.textActive,
+    textAlign: 'center',
   },
   etiquetaTextoBloqueado: { color: theme.textLocked },
 });
