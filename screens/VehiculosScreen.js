@@ -12,96 +12,96 @@ import CustomButton from '../components/CustomButton';
 
 const { width } = Dimensions.get('window');
 
-const ANIMALES = [
+const VEHICULOS = [
   {
-    id: 'gato',
-    nombre: 'Gato',
+    id: 'autobus',
+    nombre: 'Autobús',
     articulo: 'el',
-    silueta: require('../assets/images/Animales/gato silueta.png'),
-    color: require('../assets/images/Animales/gato color.png'),
-    dato: 'Los gatos usan sus bigotes para medir espacios y orientarse.',
-    pista: 'Le encanta dormir y ronronear.',
+    silueta: require('../assets/images/Vehiculos/autobus silueta.png'),
+    color: require('../assets/images/Vehiculos/autobus color.png'),
+    dato: 'El autobús es uno de los transportes más usados en las ciudades.',
+    pista: 'Lleva a muchas personas a la vez.',
   },
   {
-    id: 'perro',
-    nombre: 'Perro',
+    id: 'avion',
+    nombre: 'Avión',
     articulo: 'el',
-    silueta: require('../assets/images/Animales/perro silueta.png'),
-    color: require('../assets/images/Animales/perro color.png'),
-    dato: 'Los perros tienen un olfato muy fuerte y aprenden con mucha práctica.',
-    pista: 'Es el mejor amigo del humano.',
+    silueta: require('../assets/images/Vehiculos/avion silueta.png'),
+    color: require('../assets/images/Vehiculos/avion color.png'),
+    dato: 'Los aviones pueden volar a más de 900 km/h.',
+    pista: 'Vuela muy alto por el cielo.',
   },
   {
-    id: 'leon',
-    nombre: 'León',
+    id: 'barco',
+    nombre: 'Barco',
     articulo: 'el',
-    silueta: require('../assets/images/Animales/leon silueta.png'),
-    color: require('../assets/images/Animales/leon color.png'),
-    dato: 'Los leones viven en grupos llamados manadas.',
-    pista: 'Es el rey de la selva.',
+    silueta: require('../assets/images/Vehiculos/barco silueta.png'),
+    color: require('../assets/images/Vehiculos/barco color.png'),
+    dato: 'Los barcos pueden transportar carga enorme de un país a otro.',
+    pista: 'Navega por el mar o los ríos.',
   },
   {
-    id: 'conejo',
-    nombre: 'Conejo',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/conejo silueta.png'),
-    color: require('../assets/images/Animales/conejo color.png'),
-    dato: 'Los conejos se comunican golpeando el suelo con sus patas traseras.',
-    pista: 'Tiene orejas muy largas y salta mucho.',
-  },
-  {
-    id: 'elefante',
-    nombre: 'Elefante',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/elefante silueta.png'),
-    color: require('../assets/images/Animales/elefante color.png'),
-    dato: 'Los elefantes son los animales terrestres más grandes del mundo.',
-    pista: 'Tiene una trompa muy larga y orejas enormes.',
-  },
-  {
-    id: 'jirafa',
-    nombre: 'Jirafa',
+    id: 'bicicleta',
+    nombre: 'Bicicleta',
     articulo: 'la',
-    silueta: require('../assets/images/Animales/jirafa silueta.png'),
-    color: require('../assets/images/Animales/jirafa color.png'),
-    dato: 'Las jirafas comen hojas de árboles muy altos.',
-    pista: 'Tiene el cuello más largo de todos.',
+    silueta: require('../assets/images/Vehiculos/bicicleta silueta.png'),
+    color: require('../assets/images/Vehiculos/bicicleta color.png'),
+    dato: 'La bicicleta no contamina y es muy buena para la salud.',
+    pista: 'Se mueve pedaleando y tiene dos ruedas.',
   },
   {
-    id: 'vaca',
-    nombre: 'Vaca',
-    articulo: 'la',
-    silueta: require('../assets/images/Animales/vaca silueta.png'),
-    color: require('../assets/images/Animales/vaca color.png'),
-    dato: 'Las vacas mastican varias veces para digerir mejor la comida.',
-    pista: 'Nos da leche y vive en el campo.',
-  },
-  {
-    id: 'cocodrilo',
-    nombre: 'Cocodrilo',
+    id: 'bomberos',
+    nombre: 'Camión de bomberos',
     articulo: 'el',
-    silueta: require('../assets/images/Animales/cocodrilo silueta.png'),
-    color: require('../assets/images/Animales/cocodrilo color.png'),
-    dato: 'Los cocodrilos pueden quedarse muy quietos para cazar.',
-    pista: 'Tiene dientes muy afilados y vive en el agua.',
+    silueta: require('../assets/images/Vehiculos/bomberos silueta.png'),
+    color: require('../assets/images/Vehiculos/bomberos color.png'),
+    dato: 'Los camiones de bomberos llevan agua y mangueras para apagar incendios.',
+    pista: 'Es rojo y ayuda a apagar incendios.',
   },
   {
-    id: 'pinguino',
-    nombre: 'Pingüino',
+    id: 'carro',
+    nombre: 'Carro',
     articulo: 'el',
-    silueta: require('../assets/images/Animales/pinguino silueta.png'),
-    color: require('../assets/images/Animales/pinguino color.png'),
-    dato: 'Los pingüinos no pueden volar, pero son excelentes nadadores.',
-    pista: 'Vive en lugares muy fríos y camina moviendo las alas.',
+    silueta: require('../assets/images/Vehiculos/carro silueta.png'),
+    color: require('../assets/images/Vehiculos/carro color.png'),
+    dato: 'Los carros eléctricos no usan gasolina y contaminan menos.',
+    pista: 'Tiene cuatro ruedas y lo manejan personas.',
   },
   {
-    id: 'tortuga',
-    nombre: 'Tortuga',
-    articulo: 'la',
-    silueta: require('../assets/images/Animales/tortuga silueta.png'),
-    color: require('../assets/images/Animales/tortuga color.png'),
-    dato: 'Algunas tortugas pueden vivir más de 100 años.',
-    pista: 'Tiene un caparazón duro y camina muy despacio.',
+    id: 'cohete',
+    nombre: 'Cohete',
+    articulo: 'el',
+    silueta: require('../assets/images/Vehiculos/cohete silueta.png'),
+    color: require('../assets/images/Vehiculos/cohete color.png'),
+    dato: 'Los cohetes necesitan una gran cantidad de combustible para salir de la Tierra.',
+    pista: 'Vuela hasta el espacio dejando una gran llama detrás.',
+  },
+  {
+    id: 'helicoptero',
+    nombre: 'Helicóptero',
+    articulo: 'el',
+    silueta: require('../assets/images/Vehiculos/helicoptero silueta.png'),
+    color: require('../assets/images/Vehiculos/helicoptero color.png'),
+    dato: 'Los helicópteros pueden quedarse quietos en el aire sin moverse.',
+    pista: 'Tiene hélices que giran para volar.',
+  },
+  {
+    id: 'tractor',
+    nombre: 'Tractor',
+    articulo: 'el',
+    silueta: require('../assets/images/Vehiculos/tractor silueta.png'),
+    color: require('../assets/images/Vehiculos/tractor color.png'),
+    dato: 'Los tractores ayudan a arar la tierra y sembrar los campos.',
+    pista: 'Trabaja en el campo y tiene ruedas muy grandes atrás.',
+  },
+  {
+    id: 'tren',
+    nombre: 'Tren',
+    articulo: 'el',
+    silueta: require('../assets/images/Vehiculos/tren silueta.png'),
+    color: require('../assets/images/Vehiculos/tren color.png'),
+    dato: 'Los trenes bala en Japón pueden ir a más de 300 km/h.',
+    pista: 'Corre sobre rieles y tiene muchos vagones.',
   },
 ];
 
@@ -116,34 +116,36 @@ function otrosAleatorios(todos, excluirId, cantidad) {
 }
 
 function generarNiveles() {
-  const seleccionados = mezclar(ANIMALES).slice(0, ANIMALES.length);
-  return seleccionados.map((animal, i) => {
+  const seleccionados = mezclar(VEHICULOS).slice(0, VEHICULOS.length);
+  return seleccionados.map((vehiculo, i) => {
     const tipo = TIPOS[i % TIPOS.length === 0 && i > 0
       ? Math.floor(Math.random() * TIPOS.length)
       : i % TIPOS.length];
-    const otros = otrosAleatorios(ANIMALES, animal.id, 2);
+    const otros = otrosAleatorios(VEHICULOS, vehiculo.id, 2);
 
     if (tipo === 'nombre') {
       return {
-        tipo, animal, dato: animal.dato,
-        opciones: mezclar([animal.nombre, ...otros.map(o => o.nombre)]),
-        respuestaCorrecta: animal.nombre,
+        tipo, vehiculo, dato: vehiculo.dato,
+        opciones: mezclar([vehiculo.nombre, ...otros.map(o => o.nombre)]),
+        respuestaCorrecta: vehiculo.nombre,
       };
     }
     if (tipo === 'sino') {
       const esVerdadero = Math.random() > 0.5;
-      const nombreMostrado = esVerdadero ? animal.nombre : otros[0].nombre;
+      const otroElegido = otros[0];
+      const nombreMostrado = esVerdadero ? vehiculo.nombre : otroElegido.nombre;
+      const articuloMostrado = esVerdadero ? vehiculo.articulo : otroElegido.articulo;
       return {
-        tipo, animal, dato: animal.dato, nombreMostrado,
+        tipo, vehiculo, dato: vehiculo.dato, nombreMostrado, articuloMostrado,
         respuestaCorrecta: esVerdadero ? 'Sí' : 'No',
         opciones: ['Sí', 'No'],
       };
     }
-    const opcionesAnimales = mezclar([animal, ...otros]);
+    const opcionesVehiculos = mezclar([vehiculo, ...otros]);
     return {
-      tipo, animal, dato: animal.dato,
-      opcionesAnimales,
-      respuestaCorrecta: animal.id,
+      tipo, vehiculo, dato: vehiculo.dato,
+      opcionesVehiculos,
+      respuestaCorrecta: vehiculo.id,
     };
   });
 }
@@ -163,7 +165,7 @@ function useFlote(distancia, duracion, delay = 0) {
   return valor.interpolate({ inputRange: [0, 1], outputRange: [0, -distancia] });
 }
 
-export default function AnimalesScreen({ navigation }) {
+export default function VehiculosScreen({ navigation }) {
   const [fontsLoaded] = useFonts({ Baloo2_700Bold, Baloo2_800ExtraBold });
   const { actualizarEstrellas } = useStars();
 
@@ -188,7 +190,7 @@ export default function AnimalesScreen({ navigation }) {
   const totalNiveles = niveles.length;
 
   useEffect(() => {
-    if (finalizado) actualizarEstrellas('animales', puntos);
+    if (finalizado) actualizarEstrellas('vehiculos', puntos);
   }, [actualizarEstrellas, finalizado, puntos]);
 
   if (!fontsLoaded) return null;
@@ -236,27 +238,26 @@ export default function AnimalesScreen({ navigation }) {
     setRespuesta(correcto ? 'correcto' : 'incorrecto');
     if (correcto) setPuntos(v => v + 1);
     animarCambio(() => { setMostrarColor(true); setMostrarDato(true); });
-    // El avance ya no es automático — lo dispara el botón del overlay o de la tarjeta "Era:"
   };
 
   const estadoFinal = respuesta === 'correcto' ? 'correcto' : 'incorrecto';
 
   const etiquetaTipo = () => {
     if (!nivel) return '';
-    if (nivel.tipo === 'nombre') return '¿Cuál animal es?';
-    if (nivel.tipo === 'sino') return `¿Es ${nivel.animal.articulo === 'la' ? 'una' : 'un'} ${nivel.nombreMostrado}?`;
-    if (nivel.tipo === 'silueta') return `¿Cuál silueta es ${nivel.animal.articulo} ${nivel.animal.nombre}?`;
+    if (nivel.tipo === 'nombre') return '¿Cuál vehículo es?';
+    if (nivel.tipo === 'sino') return `¿Es ${nivel.articuloMostrado === 'la' ? 'una' : 'un'} ${nivel.nombreMostrado}?`;
+    if (nivel.tipo === 'silueta') return `¿Cuál silueta es ${nivel.vehiculo.articulo} ${nivel.vehiculo.nombre}?`;
   };
 
   // ── Pantalla final ──
   if (finalizado) {
     return (
-      <LinearGradient colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.fondo}>
+      <LinearGradient colors={['#1A6B8A', '#4FC3D5', '#E8F4FD']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.fondo}>
         <StatusBar style="light" />
         <SafeAreaView style={styles.contenidoFin}>
           <View style={styles.cuerpoFin}>
             <Text style={styles.tituloFin}>¡Muy bien!</Text>
-            <Text style={styles.subtituloFin}>Terminaste los {totalNiveles} niveles de animales.</Text>
+            <Text style={styles.subtituloFin}>Terminaste los {totalNiveles} niveles de vehículos.</Text>
             <Text style={styles.subtituloFin}>Ganaste {puntos} de {totalNiveles} estrellas.</Text>
             <View style={styles.filaEstrellasFin}>
               {Array.from({ length: totalNiveles }).map((_, i) => (
@@ -274,7 +275,7 @@ export default function AnimalesScreen({ navigation }) {
 
   // ── Pantalla de juego ──
   return (
-    <LinearGradient colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.fondo}>
+    <LinearGradient colors={['#1A6B8A', '#4FC3D5', '#E8F4FD']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.fondo}>
       <StatusBar style="light" />
       <Animated.View style={[styles.burbuja, styles.burbuja1, { transform: [{ translateY: flote1 }] }]} />
       <Animated.View style={[styles.burbuja, styles.burbuja2, { transform: [{ translateY: flote2 }] }]} />
@@ -292,7 +293,7 @@ export default function AnimalesScreen({ navigation }) {
               style={styles.botonRegresar}
             />
             <View style={styles.headerCentro}>
-              <Text style={styles.headerTitulo}>Animales</Text>
+              <Text style={styles.headerTitulo}>Vehículos</Text>
             </View>
             <View style={styles.badgeEstrella}>
               <Text style={styles.badgeIcon}>⭐</Text>
@@ -323,17 +324,17 @@ export default function AnimalesScreen({ navigation }) {
             <View style={styles.circuloImagen}>
               <Animated.View style={{ transform: [{ scale: escalaImagen }], opacity: opacidadImagen }}>
                 {nivel.tipo === 'silueta' ? (
-                  <Text style={styles.nombreGrande}>{nivel.animal.nombre}</Text>
+                  <Text style={styles.nombreGrande}>{nivel.vehiculo.nombre}</Text>
                 ) : (
                   <Image
-                    source={mostrarColor ? nivel.animal.color : nivel.animal.silueta}
+                    source={mostrarColor ? nivel.vehiculo.color : nivel.vehiculo.silueta}
                     style={styles.silueta}
                     resizeMode="contain"
                   />
                 )}
               </Animated.View>
             </View>
-            <Text style={styles.textoPista}>📍 {nivel.animal.pista}</Text>
+            <Text style={styles.textoPista}>📍 {nivel.vehiculo.pista}</Text>
           </View>
 
           <Text style={styles.pregunta}>{etiquetaTipo()}</Text>
@@ -382,55 +383,56 @@ export default function AnimalesScreen({ navigation }) {
 
           {/* TIPO SILUETA — 3 tarjetas con imágenes */}
           {nivel.tipo === 'silueta' && (
-              <View style={styles.opcionesSilueta}>
-                {nivel.opcionesAnimales.map((a) => {
-                  const seleccionada = opcionElegida === a.id;
-                  const esCorrecta = a.id === nivel.respuestaCorrecta;
+            <View style={styles.opcionesSilueta}>
+              {nivel.opcionesVehiculos.map((v) => {
+                const seleccionada = opcionElegida === v.id;
+                const esCorrecta = v.id === nivel.respuestaCorrecta;
 
-                  let colorBase = 'rgba(255,255,255,0.75)';
-                  let bordeBase = 'rgba(26,60,94,0.2)';
+                let colorBase = 'rgba(255,255,255,0.75)';
+                let bordeBase = 'rgba(26,60,94,0.2)';
 
-                  if (respuesta) {
-                    if (esCorrecta) {
-                      colorBase = 'rgba(136,204,136,0.35)';
-                      bordeBase = '#4AAE4A';
-                    } else if (seleccionada) {
-                      colorBase = '#F47C7C';
-                      bordeBase = '#D45A5A';
-                    }
+                if (respuesta) {
+                  if (esCorrecta) {
+                    colorBase = 'rgba(136,204,136,0.35)';
+                    bordeBase = '#4AAE4A';
+                  } else if (seleccionada) {
+                    colorBase = '#F47C7C';
+                    bordeBase = '#D45A5A';
                   }
+                }
 
-                  return (
-                    <TouchableOpacity key={a.id}
-                      style={[styles.tarjetaSiluetaOpcion, { backgroundColor: colorBase, borderColor: bordeBase }]}
-                      onPress={() => elegir(a.id)} activeOpacity={0.84} disabled={!!respuesta}>
-                      <Image
-                        source={mostrarColor && esCorrecta ? a.color : a.silueta}
-                        style={styles.siluetaOpcion}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
+                return (
+                  <TouchableOpacity key={v.id}
+                    style={[styles.tarjetaSiluetaOpcion, { backgroundColor: colorBase, borderColor: bordeBase }]}
+                    onPress={() => elegir(v.id)} activeOpacity={0.84} disabled={!!respuesta}>
+                    <Image
+                      source={mostrarColor && esCorrecta ? v.color : v.silueta}
+                      style={styles.siluetaOpcion}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
 
-          {/* ── Tarjeta "Era:" — solo si la respuesta fue incorrecta ── */}
+          {/* ── Tarjeta "Es:" — solo si la respuesta fue incorrecta ── */}
           {respuesta === 'incorrecto' && (
-              <View style={styles.tarjetaEra}>
-                {nivel.tipo !== 'silueta' && (
-                  <Text style={styles.textoEra}>
-                    Es:{' '}
-                    <Text style={styles.textoEraDestacado}>{nivel.animal.nombre}</Text>
-                  </Text>
-                )}
-                <TouchableOpacity style={styles.botonContinuarEra} onPress={avanzarNivel} activeOpacity={0.85}>
-                  <Text style={styles.textoBotonContinuarEra}>
-                    {indiceNivel + 1 >= totalNiveles ? 'Ver mis resultados →' : 'Siguiente →'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            <View style={styles.tarjetaEra}>
+              {nivel.tipo !== 'silueta' && (
+                <Text style={styles.textoEra}>
+                  Es:{' '}
+                  <Text style={styles.textoEraDestacado}>{nivel.vehiculo.nombre}</Text>
+                </Text>
+              )}
+              <TouchableOpacity style={styles.botonContinuarEra} onPress={avanzarNivel} activeOpacity={0.85}>
+                <Text style={styles.textoBotonContinuarEra}>
+                  {indiceNivel + 1 >= totalNiveles ? 'Ver mis resultados →' : 'Siguiente →'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
         </ScrollView>
       </SafeAreaView>
 
@@ -442,7 +444,7 @@ export default function AnimalesScreen({ navigation }) {
             {/* Fila superior — fija arriba */}
             <View style={styles.overlayFila}>
               <View style={styles.overlayBadgeCategoria}>
-                <Text style={styles.overlayBadgeCategoriaTexto}>Animales</Text>
+                <Text style={styles.overlayBadgeCategoriaTexto}>Vehículos</Text>
               </View>
               <View style={styles.overlayBadgeProgreso}>
                 <Text style={styles.overlayBadgeProgresoTexto}>{indiceNivel + 1}/{totalNiveles}</Text>
@@ -455,16 +457,16 @@ export default function AnimalesScreen({ navigation }) {
 
               <View style={styles.tarjetaResultado}>
                 <View style={styles.circuloResultado}>
-                  <Image source={nivel.animal.color} style={styles.imagenResultado} resizeMode="contain" />
+                  <Image source={nivel.vehiculo.color} style={styles.imagenResultado} resizeMode="contain" />
                 </View>
-                <Text style={styles.nombreResultado}>{nivel.animal.nombre}</Text>
+                <Text style={styles.nombreResultado}>{nivel.vehiculo.nombre}</Text>
 
                 <View style={styles.lineaDivisoria} />
 
                 <View style={styles.badgeDato}>
                   <Text style={styles.badgeDatoTexto}>💡 ¿Sabías que...?</Text>
                 </View>
-                <Text style={styles.textoDato}>{nivel.animal.dato}</Text>
+                <Text style={styles.textoDato}>{nivel.vehiculo.dato}</Text>
               </View>
 
               <TouchableOpacity style={styles.botonContinuar} onPress={avanzarNivel} activeOpacity={0.85}>
@@ -569,8 +571,8 @@ const styles = StyleSheet.create({
   tarjetaSilueta: {
     borderRadius: 28,
     borderWidth: 3,
-    borderColor: '#1A3C5E',
-    backgroundColor: '#204972',
+    borderColor: '#0D4A5E',
+    backgroundColor: '#0D4A5E',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
@@ -589,14 +591,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   silueta: {
-    width: width * 0.65,
-    height: width * 0.46,
+    width: width * 0.45,
+    height: width * 0.26,
   },
   nombreGrande: {
     fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 36,
+    fontSize: 32,
     color: '#FFFFFF',
     textAlign: 'center',
+    paddingHorizontal: 8,
   },
   textoPista: {
     fontFamily: 'Baloo2_700Bold',
@@ -613,7 +616,7 @@ const styles = StyleSheet.create({
   pregunta: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 18,
-    color: '#1A3C5E',
+    color: '#0D4A5E',
     textAlign: 'center',
     marginBottom: 10,
   },
@@ -671,7 +674,7 @@ const styles = StyleSheet.create({
     height: (width - 80) / 3,
   },
 
-  // ── Tarjeta "Era:" (respuesta incorrecta) ──
+  // ── Tarjeta "Es:" (respuesta incorrecta) ──
   tarjetaEra: {
     backgroundColor: 'rgba(244,124,124,0.95)',
     borderRadius: 20,
@@ -712,7 +715,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
   },
-  overlayCorrecto: { backgroundColor: '#5BAE5B' },
+  overlayCorrecto: { backgroundColor: '#4FC3D5' },
   overlayContenido: {
     flex: 1,
     paddingHorizontal: 20,
@@ -771,7 +774,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     elevation: 8,
-    shadowColor: '#1A3C5E',
+    shadowColor: '#0D4A5E',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -780,7 +783,7 @@ const styles = StyleSheet.create({
     width: width * 0.80,
     height: width * 0.80,
     borderRadius: 40,
-    backgroundColor: '#1A3C5E',
+    backgroundColor: '#0D4A5E',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
@@ -794,6 +797,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#1A3C5E',
     marginBottom: 14,
+    textAlign: 'center',
+    paddingHorizontal: 8,
   },
   lineaDivisoria: {
     width: '100%',
@@ -802,7 +807,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   badgeDato: {
-    backgroundColor: '#6C3FCF',
+    backgroundColor: '#1A6B8A',
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 14,

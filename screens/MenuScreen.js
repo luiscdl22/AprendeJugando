@@ -42,75 +42,34 @@ const CATEGORIAS = [
   {
     id: 'animales',
     titulo: 'Animales',
-    subtitulo: 'Siluetas que se descubren',
+    subtitulo: 'Adivina el animal',
     color: '#8B5CF6',
     icono: require('../assets/images/cat_animales.png'),
-    descripcion: 'Adivina la silueta y aprende un dato al acertar.',
-    actividad: 'Adivina la Silueta',
     ruta: 'Animales',
   },
   {
     id: 'vehiculos',
     titulo: 'Vehículos',
-    subtitulo: 'Piezas y forma',
+    subtitulo: 'Adivina el vehículo',
     color: '#4FC3D5',
     icono: require('../assets/images/cat_transportes.png'),
-    descripcion: 'Une partes como ruedas, cabina y carga.',
-    actividad: 'Rompecabezas por capas',
-    ruta: 'CategoriaDetalle',
-    categoria: {
-      titulo: 'Vehículos',
-      subtitulo: 'Rompecabezas por capas',
-      color: '#4FC3D5',
-      icono: require('../assets/images/cat_transportes.png'),
-      videoSource: null,
-      resumen: 'Descubre partes del vehículo limpiando la capa oculta.',
-      detalle: 'Arrastra las piezas al lugar correcto y mira cómo cobra vida.',
-      accion: 'Abrir actividad',
-      modo: 'capas',
-    },
+    ruta: 'Vehiculos',
   },
   {
-    id: 'dinosaurios',
-    titulo: 'Dinosaurios',
-    subtitulo: 'Huella y tamaño',
-    color: '#88CC88',
+    id: 'utiles',
+    titulo: 'Útiles',
+    subtitulo: 'Adivina el útil',
+    color: '#E08A3E',
     icono: require('../assets/images/cat_utiles.png'),
-    descripcion: 'Completa la silueta y revela al dinosaurio.',
-    actividad: 'Completa la forma',
-    ruta: 'CategoriaDetalle',
-    categoria: {
-      titulo: 'Dinosaurios',
-      subtitulo: 'Completa la forma',
-      color: '#88CC88',
-      icono: require('../assets/images/cat_utiles.png'),
-      videoSource: null,
-      resumen: 'Une capas y piezas para completar el dinosaurio.',
-      detalle: 'Cada pieza rescata una parte diferente de la figura.',
-      accion: 'Abrir actividad',
-      modo: 'completar',
-    },
+    ruta: 'Utiles',
   },
   {
-    id: 'espacio',
-    titulo: 'Espacio',
-    subtitulo: 'Capa de nubes',
-    color: '#FF9F43',
-    icono: require('../assets/images/cat_frutas.png'),
-    descripcion: 'Descubre planetas, estrellas y cohetes.',
-    actividad: 'Explora por capas',
-    ruta: 'CategoriaDetalle',
-    categoria: {
-      titulo: 'Espacio',
-      subtitulo: 'Explora por capas',
-      color: '#FF9F43',
-      icono: require('../assets/images/cat_frutas.png'),
-      videoSource: null,
-      resumen: 'Quita nubes o polvo espacial para encontrar las piezas.',
-      detalle: 'Cuando juntes todo, la figura espacial se ilumina.',
-      accion: 'Abrir actividad',
-      modo: 'explorar',
-    },
+    id: 'naturaleza',
+    titulo: 'Naturaleza',
+    subtitulo: 'Adivina el elemento',
+    color: '#4CAF7A',
+    icono: require('../assets/images/cat_frutas.png'), // ⚠️ ícono temporal
+    ruta: 'Naturaleza',
   },
 ];
 
@@ -191,12 +150,7 @@ export default function MenuScreen({ navigation }) {
     : null;
 
   const abrirCategoria = (categoria) => {
-    if (categoria.id === 'animales') {
-      navigation.navigate(categoria.ruta);
-      return;
-    }
-
-    navigation.navigate('CategoriaDetalle', { categoria: categoria.categoria });
+    navigation.navigate(categoria.ruta);
   };
 
   return (
@@ -288,9 +242,9 @@ export default function MenuScreen({ navigation }) {
               },
             ]}
           >
-            <Text style={styles.tituloSimple}>Lee, mira y juega sin prisa.</Text>
+            <Text style={styles.tituloSimple}>¡A jugar y aprender!</Text>
             <Text style={styles.textoSimple}>
-              Cada categoría abre una pantalla estable para que el niño pueda observar, entender y avanzar con calma.
+              Elige una categoría y descubre algo nuevo.
             </Text>
           </Animated.View>
 
@@ -300,7 +254,7 @@ export default function MenuScreen({ navigation }) {
             ]}
           >
             <View style={styles.filaSeccion}>
-              <Text style={styles.tituloSeccion}>Categorías y actividades</Text>
+              <Text style={styles.tituloSeccion}>Categorías</Text>
               <TouchableOpacity
                 style={styles.botonComoJugar}
                 onPress={() => navigation.navigate('ComoJugar')}
@@ -320,24 +274,8 @@ export default function MenuScreen({ navigation }) {
                     color={categoria.color}
                     onPress={() => abrirCategoria(categoria)}
                   />
-                  <Text style={styles.textoActividad}>{categoria.actividad}</Text>
                 </View>
               ))}
-            </View>
-
-            <View style={styles.bloqueResumenActividad}>
-              <View style={styles.fichaActividad}>
-                <Text style={styles.valorActividad}>4</Text>
-                <Text style={styles.etiquetaActividad}>mundos</Text>
-              </View>
-              <View style={styles.fichaActividad}>
-                <Text style={styles.valorActividad}>4</Text>
-                <Text style={styles.etiquetaActividad}>actividades</Text>
-              </View>
-              <View style={styles.fichaActividad}>
-                <Text style={styles.valorActividad}>Variar</Text>
-                <Text style={styles.etiquetaActividad}>cada tema</Text>
-              </View>
             </View>
           </Animated.View>
 
@@ -533,44 +471,5 @@ const styles = StyleSheet.create({
   },
   cardCategoriaWrap: {
     width: '48%',
-  },
-  textoActividad: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 12,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginTop: 6,
-    opacity: 0.95,
-  },
-  bloqueResumenActividad: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 12,
-  },
-  fichaActividad: {
-    flexGrow: 1,
-    flexBasis: 96,
-    minWidth: 96,
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    borderRadius: 18,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-  },
-  valorActividad: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 22,
-    color: '#FFFFFF',
-    lineHeight: 26,
-  },
-  etiquetaActividad: {
-    fontFamily: 'Baloo2_700Bold',
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.9)',
-    textAlign: 'center',
-    lineHeight: 16,
   },
 });
