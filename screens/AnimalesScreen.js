@@ -1,147 +1,168 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
-  StyleSheet, Text, View, Image, Animated, Easing,
-  Dimensions, ScrollView, TouchableOpacity,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
-import { useStars } from '../context/StarContext';
-import CustomButton from '../components/CustomButton';
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Animated,
+  Easing,
+  Dimensions,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import {
+  useFonts,
+  Baloo2_700Bold,
+  Baloo2_800ExtraBold,
+} from "@expo-google-fonts/baloo-2";
+import { useStars } from "../context/StarContext";
+import CustomButton from "../components/CustomButton";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const ANIMALES = [
   {
-    id: 'gato',
-    nombre: 'Gato',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/gato silueta.png'),
-    color: require('../assets/images/Animales/gato color.png'),
-    dato: 'Los gatos usan sus bigotes para medir espacios y orientarse.',
-    pista: 'Le encanta dormir y ronronear.',
+    id: "gato",
+    nombre: "Gato",
+    articulo: "el",
+    silueta: require("../assets/images/Animales/gato silueta.png"),
+    color: require("../assets/images/Animales/gato color.png"),
+    dato: "Los gatos usan sus bigotes para medir espacios y orientarse.",
+    pista: "Le encanta dormir y ronronear.",
   },
   {
-    id: 'perro',
-    nombre: 'Perro',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/perro silueta.png'),
-    color: require('../assets/images/Animales/perro color.png'),
-    dato: 'Los perros tienen un olfato muy fuerte y aprenden con mucha práctica.',
-    pista: 'Es el mejor amigo del humano.',
+    id: "perro",
+    nombre: "Perro",
+    articulo: "el",
+    silueta: require("../assets/images/Animales/perro silueta.png"),
+    color: require("../assets/images/Animales/perro color.png"),
+    dato: "Los perros tienen un olfato muy fuerte y aprenden con mucha práctica.",
+    pista: "Es el mejor amigo del humano.",
   },
   {
-    id: 'leon',
-    nombre: 'León',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/leon silueta.png'),
-    color: require('../assets/images/Animales/leon color.png'),
-    dato: 'Los leones viven en grupos llamados manadas.',
-    pista: 'Es el rey de la selva.',
+    id: "leon",
+    nombre: "León",
+    articulo: "el",
+    silueta: require("../assets/images/Animales/leon silueta.png"),
+    color: require("../assets/images/Animales/leon color.png"),
+    dato: "Los leones viven en grupos llamados manadas.",
+    pista: "Es el rey de la selva.",
   },
   {
-    id: 'conejo',
-    nombre: 'Conejo',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/conejo silueta.png'),
-    color: require('../assets/images/Animales/conejo color.png'),
-    dato: 'Los conejos se comunican golpeando el suelo con sus patas traseras.',
-    pista: 'Tiene orejas muy largas y salta mucho.',
+    id: "conejo",
+    nombre: "Conejo",
+    articulo: "el",
+    silueta: require("../assets/images/Animales/conejo silueta.png"),
+    color: require("../assets/images/Animales/conejo color.png"),
+    dato: "Los conejos se comunican golpeando el suelo con sus patas traseras.",
+    pista: "Tiene orejas muy largas y salta mucho.",
   },
   {
-    id: 'elefante',
-    nombre: 'Elefante',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/elefante silueta.png'),
-    color: require('../assets/images/Animales/elefante color.png'),
-    dato: 'Los elefantes son los animales terrestres más grandes del mundo.',
-    pista: 'Tiene una trompa muy larga y orejas enormes.',
+    id: "elefante",
+    nombre: "Elefante",
+    articulo: "el",
+    silueta: require("../assets/images/Animales/elefante silueta.png"),
+    color: require("../assets/images/Animales/elefante color.png"),
+    dato: "Los elefantes son los animales terrestres más grandes del mundo.",
+    pista: "Tiene una trompa muy larga y orejas enormes.",
   },
   {
-    id: 'jirafa',
-    nombre: 'Jirafa',
-    articulo: 'la',
-    silueta: require('../assets/images/Animales/jirafa silueta.png'),
-    color: require('../assets/images/Animales/jirafa color.png'),
-    dato: 'Las jirafas comen hojas de árboles muy altos.',
-    pista: 'Tiene el cuello más largo de todos.',
+    id: "jirafa",
+    nombre: "Jirafa",
+    articulo: "la",
+    silueta: require("../assets/images/Animales/jirafa silueta.png"),
+    color: require("../assets/images/Animales/jirafa color.png"),
+    dato: "Las jirafas comen hojas de árboles muy altos.",
+    pista: "Tiene el cuello más largo de todos.",
   },
   {
-    id: 'vaca',
-    nombre: 'Vaca',
-    articulo: 'la',
-    silueta: require('../assets/images/Animales/vaca silueta.png'),
-    color: require('../assets/images/Animales/vaca color.png'),
-    dato: 'Las vacas mastican varias veces para digerir mejor la comida.',
-    pista: 'Nos da leche y vive en el campo.',
+    id: "vaca",
+    nombre: "Vaca",
+    articulo: "la",
+    silueta: require("../assets/images/Animales/vaca silueta.png"),
+    color: require("../assets/images/Animales/vaca color.png"),
+    dato: "Las vacas mastican varias veces para digerir mejor la comida.",
+    pista: "Nos da leche y vive en el campo.",
   },
   {
-    id: 'cocodrilo',
-    nombre: 'Cocodrilo',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/cocodrilo silueta.png'),
-    color: require('../assets/images/Animales/cocodrilo color.png'),
-    dato: 'Los cocodrilos pueden quedarse muy quietos para cazar.',
-    pista: 'Tiene dientes muy afilados y vive en el agua.',
+    id: "cocodrilo",
+    nombre: "Cocodrilo",
+    articulo: "el",
+    silueta: require("../assets/images/Animales/cocodrilo silueta.png"),
+    color: require("../assets/images/Animales/cocodrilo color.png"),
+    dato: "Los cocodrilos pueden quedarse muy quietos para cazar.",
+    pista: "Tiene dientes muy afilados y vive en el agua.",
   },
   {
-    id: 'pinguino',
-    nombre: 'Pingüino',
-    articulo: 'el',
-    silueta: require('../assets/images/Animales/pinguino silueta.png'),
-    color: require('../assets/images/Animales/pinguino color.png'),
-    dato: 'Los pingüinos no pueden volar, pero son excelentes nadadores.',
-    pista: 'Vive en lugares muy fríos y camina moviendo las alas.',
+    id: "pinguino",
+    nombre: "Pingüino",
+    articulo: "el",
+    silueta: require("../assets/images/Animales/pinguino silueta.png"),
+    color: require("../assets/images/Animales/pinguino color.png"),
+    dato: "Los pingüinos no pueden volar, pero son excelentes nadadores.",
+    pista: "Vive en lugares muy fríos y camina moviendo las alas.",
   },
   {
-    id: 'tortuga',
-    nombre: 'Tortuga',
-    articulo: 'la',
-    silueta: require('../assets/images/Animales/tortuga silueta.png'),
-    color: require('../assets/images/Animales/tortuga color.png'),
-    dato: 'Algunas tortugas pueden vivir más de 100 años.',
-    pista: 'Tiene un caparazón duro y camina muy despacio.',
+    id: "tortuga",
+    nombre: "Tortuga",
+    articulo: "la",
+    silueta: require("../assets/images/Animales/tortuga silueta.png"),
+    color: require("../assets/images/Animales/tortuga color.png"),
+    dato: "Algunas tortugas pueden vivir más de 100 años.",
+    pista: "Tiene un caparazón duro y camina muy despacio.",
   },
 ];
 
-const TIPOS = ['nombre', 'sino', 'silueta'];
+const TIPOS = ["nombre", "sino", "silueta"];
 
 function mezclar(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
 function otrosAleatorios(todos, excluirId, cantidad) {
-  return mezclar(todos.filter(a => a.id !== excluirId)).slice(0, cantidad);
+  return mezclar(todos.filter((a) => a.id !== excluirId)).slice(0, cantidad);
 }
 
 function generarNiveles() {
   const seleccionados = mezclar(ANIMALES).slice(0, ANIMALES.length);
   return seleccionados.map((animal, i) => {
-    const tipo = TIPOS[i % TIPOS.length === 0 && i > 0
-      ? Math.floor(Math.random() * TIPOS.length)
-      : i % TIPOS.length];
+    const tipo =
+      TIPOS[
+        i % TIPOS.length === 0 && i > 0
+          ? Math.floor(Math.random() * TIPOS.length)
+          : i % TIPOS.length
+      ];
     const otros = otrosAleatorios(ANIMALES, animal.id, 2);
 
-    if (tipo === 'nombre') {
+    if (tipo === "nombre") {
       return {
-        tipo, animal, dato: animal.dato,
-        opciones: mezclar([animal.nombre, ...otros.map(o => o.nombre)]),
+        tipo,
+        animal,
+        dato: animal.dato,
+        opciones: mezclar([animal.nombre, ...otros.map((o) => o.nombre)]),
         respuestaCorrecta: animal.nombre,
       };
     }
-    if (tipo === 'sino') {
+    if (tipo === "sino") {
       const esVerdadero = Math.random() > 0.5;
       const nombreMostrado = esVerdadero ? animal.nombre : otros[0].nombre;
       return {
-        tipo, animal, dato: animal.dato, nombreMostrado,
-        respuestaCorrecta: esVerdadero ? 'Sí' : 'No',
-        opciones: ['Sí', 'No'],
+        tipo,
+        animal,
+        dato: animal.dato,
+        nombreMostrado,
+        respuestaCorrecta: esVerdadero ? "Sí" : "No",
+        opciones: ["Sí", "No"],
       };
     }
     const opcionesAnimales = mezclar([animal, ...otros]);
     return {
-      tipo, animal, dato: animal.dato,
+      tipo,
+      animal,
+      dato: animal.dato,
       opcionesAnimales,
       respuestaCorrecta: animal.id,
     };
@@ -153,14 +174,28 @@ function useFlote(distancia, duracion, delay = 0) {
   useEffect(() => {
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(valor, { toValue: 1, duration: duracion, delay, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(valor, { toValue: 0, duration: duracion, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ])
+        Animated.timing(valor, {
+          toValue: 1,
+          duration: duracion,
+          delay,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(valor, {
+          toValue: 0,
+          duration: duracion,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
     );
     anim.start();
     return () => anim.stop();
   }, [delay, duracion, valor]);
-  return valor.interpolate({ inputRange: [0, 1], outputRange: [0, -distancia] });
+  return valor.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -distancia],
+  });
 }
 
 export default function AnimalesScreen({ navigation }) {
@@ -188,7 +223,7 @@ export default function AnimalesScreen({ navigation }) {
   const totalNiveles = niveles.length;
 
   useEffect(() => {
-    if (finalizado) actualizarEstrellas('animales', puntos);
+    if (finalizado) actualizarEstrellas("animales", puntos);
   }, [actualizarEstrellas, finalizado, puntos]);
 
   if (!fontsLoaded) return null;
@@ -201,30 +236,59 @@ export default function AnimalesScreen({ navigation }) {
 
   const reiniciar = () => {
     setNiveles(generarNiveles());
-    setIndiceNivel(0); setPuntos(0); setRespuesta(null);
-    setOpcionElegida(null); setMostrarColor(false);
-    setMostrarDato(false); setFinalizado(false);
+    setIndiceNivel(0);
+    setPuntos(0);
+    setRespuesta(null);
+    setOpcionElegida(null);
+    setMostrarColor(false);
+    setMostrarDato(false);
+    setFinalizado(false);
     resetAnimaciones();
   };
 
   const avanzarNivel = () => {
-    if (indiceNivel + 1 >= totalNiveles) { setFinalizado(true); return; }
-    setIndiceNivel(v => v + 1);
-    setRespuesta(null); setOpcionElegida(null);
-    setMostrarColor(false); setMostrarDato(false);
+    if (indiceNivel + 1 >= totalNiveles) {
+      setFinalizado(true);
+      return;
+    }
+    setIndiceNivel((v) => v + 1);
+    setRespuesta(null);
+    setOpcionElegida(null);
+    setMostrarColor(false);
+    setMostrarDato(false);
     resetAnimaciones();
   };
 
   const animarCambio = (callback) => {
     Animated.parallel([
-      Animated.timing(opacidadImagen, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(escalaImagen, { toValue: 0.9, duration: 160, useNativeDriver: true }),
+      Animated.timing(opacidadImagen, {
+        toValue: 0,
+        duration: 160,
+        useNativeDriver: true,
+      }),
+      Animated.timing(escalaImagen, {
+        toValue: 0.9,
+        duration: 160,
+        useNativeDriver: true,
+      }),
     ]).start(() => {
       callback();
       Animated.parallel([
-        Animated.timing(opacidadImagen, { toValue: 1, duration: 250, useNativeDriver: true }),
-        Animated.spring(escalaImagen, { toValue: 1, friction: 4, useNativeDriver: true }),
-        Animated.spring(escalaFeedback, { toValue: 1, friction: 5, useNativeDriver: true }),
+        Animated.timing(opacidadImagen, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.spring(escalaImagen, {
+          toValue: 1,
+          friction: 4,
+          useNativeDriver: true,
+        }),
+        Animated.spring(escalaFeedback, {
+          toValue: 1,
+          friction: 5,
+          useNativeDriver: true,
+        }),
       ]).start();
     });
   };
@@ -233,39 +297,71 @@ export default function AnimalesScreen({ navigation }) {
     if (respuesta) return;
     setOpcionElegida(opcion);
     const correcto = opcion === nivel.respuestaCorrecta;
-    setRespuesta(correcto ? 'correcto' : 'incorrecto');
-    if (correcto) setPuntos(v => v + 1);
-    animarCambio(() => { setMostrarColor(true); setMostrarDato(true); });
+    setRespuesta(correcto ? "correcto" : "incorrecto");
+    if (correcto) setPuntos((v) => v + 1);
+    animarCambio(() => {
+      setMostrarColor(true);
+      setMostrarDato(true);
+    });
     // El avance ya no es automático — lo dispara el botón del overlay o de la tarjeta "Era:"
   };
 
-  const estadoFinal = respuesta === 'correcto' ? 'correcto' : 'incorrecto';
+  const estadoFinal = respuesta === "correcto" ? "correcto" : "incorrecto";
 
   const etiquetaTipo = () => {
-    if (!nivel) return '';
-    if (nivel.tipo === 'nombre') return '¿Cuál animal es?';
-    if (nivel.tipo === 'sino') return `¿Es ${nivel.animal.articulo === 'la' ? 'una' : 'un'} ${nivel.nombreMostrado}?`;
-    if (nivel.tipo === 'silueta') return `¿Cuál silueta es ${nivel.animal.articulo} ${nivel.animal.nombre}?`;
+    if (!nivel) return "";
+    if (nivel.tipo === "nombre") return "¿Cuál animal es?";
+    if (nivel.tipo === "sino")
+      return `¿Es ${nivel.animal.articulo === "la" ? "una" : "un"} ${nivel.nombreMostrado}?`;
+    if (nivel.tipo === "silueta")
+      return `¿Cuál silueta es ${nivel.animal.articulo} ${nivel.animal.nombre}?`;
   };
 
   // ── Pantalla final ──
   if (finalizado) {
     return (
-      <LinearGradient colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.fondo}>
+      <LinearGradient
+        colors={["#6C3FCF", "#4A6FD4", "#E8F4FD"]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+        style={styles.fondo}
+      >
         <StatusBar style="light" />
         <SafeAreaView style={styles.contenidoFin}>
           <View style={styles.cuerpoFin}>
             <Text style={styles.tituloFin}>¡Muy bien!</Text>
-            <Text style={styles.subtituloFin}>Terminaste los {totalNiveles} niveles de animales.</Text>
-            <Text style={styles.subtituloFin}>Ganaste {puntos} de {totalNiveles} estrellas.</Text>
+            <Text style={styles.subtituloFin}>
+              Terminaste los {totalNiveles} niveles de animales.
+            </Text>
+            <Text style={styles.subtituloFin}>
+              Ganaste {puntos} de {totalNiveles} estrellas.
+            </Text>
             <View style={styles.filaEstrellasFin}>
               {Array.from({ length: totalNiveles }).map((_, i) => (
-                <Image key={i} source={require('../assets/images/estrella.png')}
-                  style={[styles.estrellaFin, i >= puntos && styles.estrellaFinVacia]} resizeMode="contain" />
+                <Image
+                  key={i}
+                  source={require("../assets/images/estrella.png")}
+                  style={[
+                    styles.estrellaFin,
+                    i >= puntos && styles.estrellaFinVacia,
+                  ]}
+                  resizeMode="contain"
+                />
               ))}
             </View>
-            <CustomButton label="Jugar otra vez" onPress={reiniciar} variant="primary" fullWidth />
-            <CustomButton label="Volver al menú" onPress={() => navigation.goBack()} variant="secondary" fullWidth style={{ marginTop: 8 }} />
+            <CustomButton
+              label="Jugar otra vez"
+              onPress={reiniciar}
+              variant="primary"
+              fullWidth
+            />
+            <CustomButton
+              label="Volver al menú"
+              onPress={() => navigation.goBack()}
+              variant="secondary"
+              fullWidth
+              style={{ marginTop: 8 }}
+            />
           </View>
         </SafeAreaView>
       </LinearGradient>
@@ -274,20 +370,42 @@ export default function AnimalesScreen({ navigation }) {
 
   // ── Pantalla de juego ──
   return (
-    <LinearGradient colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.fondo}>
+    <LinearGradient
+      colors={["#6C3FCF", "#4A6FD4", "#E8F4FD"]}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
+      style={styles.fondo}
+    >
       <StatusBar style="light" />
-      <Animated.View style={[styles.burbuja, styles.burbuja1, { transform: [{ translateY: flote1 }] }]} />
-      <Animated.View style={[styles.burbuja, styles.burbuja2, { transform: [{ translateY: flote2 }] }]} />
-      <Animated.View style={[styles.burbuja, styles.burbuja3, { transform: [{ translateY: flote3 }] }]} />
+      <Animated.View
+        style={[
+          styles.burbuja,
+          styles.burbuja1,
+          { transform: [{ translateY: flote1 }] },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.burbuja,
+          styles.burbuja2,
+          { transform: [{ translateY: flote2 }] },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.burbuja,
+          styles.burbuja3,
+          { transform: [{ translateY: flote3 }] },
+        ]}
+      />
 
       <SafeAreaView style={styles.contenido}>
-
         {/* ── Header fijo ── */}
         <View style={styles.headerCoral}>
           <View style={styles.headerFila}>
             <CustomButton
               label="←"
-              onPress={() => navigation.goBack()}
+              onPress={() => navigation.navigate("Menu")}
               variant="secondary"
               style={styles.botonRegresar}
             />
@@ -303,30 +421,46 @@ export default function AnimalesScreen({ navigation }) {
           {/* Badge tipo */}
           <View style={styles.badgeTipo}>
             <Text style={styles.textoBadge}>
-              {nivel.tipo === 'nombre' && '🔍 Adivina la silueta'}
-              {nivel.tipo === 'sino' && '✅ Sí o No'}
-              {nivel.tipo === 'silueta' && '🔍 Elige la silueta'}
+              {nivel.tipo === "nombre" && "🔍 Adivina la silueta"}
+              {nivel.tipo === "sino" && "✅ Sí o No"}
+              {nivel.tipo === "silueta" && "🔍 Elige la silueta"}
             </Text>
           </View>
 
           {/* Barra de progreso */}
           <View style={styles.barraFondo}>
-            <View style={[styles.barraRelleno, { width: `${(indiceNivel / totalNiveles) * 100}%` }]} />
+            <View
+              style={[
+                styles.barraRelleno,
+                { width: `${(indiceNivel / totalNiveles) * 100}%` },
+              ]}
+            />
           </View>
-          <Text style={styles.textoProgreso}>Pregunta {indiceNivel + 1}/{totalNiveles}</Text>
+          <Text style={styles.textoProgreso}>
+            Pregunta {indiceNivel + 1}/{totalNiveles}
+          </Text>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scroll}
+        >
           {/* ── Tarjeta principal ── */}
           <View style={styles.tarjetaSilueta}>
             <View style={styles.circuloImagen}>
-              <Animated.View style={{ transform: [{ scale: escalaImagen }], opacity: opacidadImagen }}>
-                {nivel.tipo === 'silueta' ? (
+              <Animated.View
+                style={{
+                  transform: [{ scale: escalaImagen }],
+                  opacity: opacidadImagen,
+                }}
+              >
+                {nivel.tipo === "silueta" ? (
                   <Text style={styles.nombreGrande}>{nivel.animal.nombre}</Text>
                 ) : (
                   <Image
-                    source={mostrarColor ? nivel.animal.color : nivel.animal.silueta}
+                    source={
+                      mostrarColor ? nivel.animal.color : nivel.animal.silueta
+                    }
                     style={styles.silueta}
                     resizeMode="contain"
                   />
@@ -339,16 +473,33 @@ export default function AnimalesScreen({ navigation }) {
           <Text style={styles.pregunta}>{etiquetaTipo()}</Text>
 
           {/* TIPO NOMBRE — 3 botones con número */}
-          {nivel.tipo === 'nombre' && (
+          {nivel.tipo === "nombre" && (
             <View style={styles.opciones}>
               {nivel.opciones.map((opcion, i) => {
                 const seleccionada = opcionElegida === opcion;
-                const colorBase = !respuesta || !seleccionada ? 'rgba(255,255,255,0.75)' : (respuesta === 'correcto' ? '#88CC88' : '#F47C7C');
-                const bordeBase = !respuesta || !seleccionada ? 'rgba(26,60,94,0.2)' : (respuesta === 'correcto' ? '#4AAE4A' : '#D45A5A');
+                const colorBase =
+                  !respuesta || !seleccionada
+                    ? "rgba(255,255,255,0.75)"
+                    : respuesta === "correcto"
+                      ? "#88CC88"
+                      : "#F47C7C";
+                const bordeBase =
+                  !respuesta || !seleccionada
+                    ? "rgba(26,60,94,0.2)"
+                    : respuesta === "correcto"
+                      ? "#4AAE4A"
+                      : "#D45A5A";
                 return (
-                  <TouchableOpacity key={opcion}
-                    style={[styles.botonOpcion, { backgroundColor: colorBase, borderColor: bordeBase }]}
-                    onPress={() => elegir(opcion)} activeOpacity={0.84} disabled={!!respuesta}>
+                  <TouchableOpacity
+                    key={opcion}
+                    style={[
+                      styles.botonOpcion,
+                      { backgroundColor: colorBase, borderColor: bordeBase },
+                    ]}
+                    onPress={() => elegir(opcion)}
+                    activeOpacity={0.84}
+                    disabled={!!respuesta}
+                  >
                     <Text style={styles.numeroOpcion}>{i + 1}.</Text>
                     <Text style={styles.textoOpcion}>{opcion}</Text>
                   </TouchableOpacity>
@@ -358,21 +509,40 @@ export default function AnimalesScreen({ navigation }) {
           )}
 
           {/* TIPO SINO — Sí / No */}
-          {nivel.tipo === 'sino' && (
+          {nivel.tipo === "sino" && (
             <View style={styles.opcionesSiNo}>
-              {['Sí', 'No'].map((opcion) => {
+              {["Sí", "No"].map((opcion) => {
                 const seleccionada = opcionElegida === opcion;
-                const colorBase = !respuesta || !seleccionada
-                  ? (opcion === 'Sí' ? 'rgba(136,204,136,0.3)' : 'rgba(244,124,124,0.3)')
-                  : (respuesta === 'correcto' ? '#88CC88' : '#F47C7C');
-                const bordeBase = !respuesta || !seleccionada
-                  ? (opcion === 'Sí' ? '#4AAE4A' : '#D45A5A')
-                  : (respuesta === 'correcto' ? '#4AAE4A' : '#D45A5A');
+                const colorBase =
+                  !respuesta || !seleccionada
+                    ? opcion === "Sí"
+                      ? "rgba(136,204,136,0.3)"
+                      : "rgba(244,124,124,0.3)"
+                    : respuesta === "correcto"
+                      ? "#88CC88"
+                      : "#F47C7C";
+                const bordeBase =
+                  !respuesta || !seleccionada
+                    ? opcion === "Sí"
+                      ? "#4AAE4A"
+                      : "#D45A5A"
+                    : respuesta === "correcto"
+                      ? "#4AAE4A"
+                      : "#D45A5A";
                 return (
-                  <TouchableOpacity key={opcion}
-                    style={[styles.botonSiNo, { backgroundColor: colorBase, borderColor: bordeBase }]}
-                    onPress={() => elegir(opcion)} activeOpacity={0.84} disabled={!!respuesta}>
-                    <Text style={styles.textoSiNo}>{opcion === 'Sí' ? '✓' : '✗'}</Text>
+                  <TouchableOpacity
+                    key={opcion}
+                    style={[
+                      styles.botonSiNo,
+                      { backgroundColor: colorBase, borderColor: bordeBase },
+                    ]}
+                    onPress={() => elegir(opcion)}
+                    activeOpacity={0.84}
+                    disabled={!!respuesta}
+                  >
+                    <Text style={styles.textoSiNo}>
+                      {opcion === "Sí" ? "✓" : "✗"}
+                    </Text>
                     <Text style={styles.textoOpcion}>{opcion}</Text>
                   </TouchableOpacity>
                 );
@@ -381,71 +551,87 @@ export default function AnimalesScreen({ navigation }) {
           )}
 
           {/* TIPO SILUETA — 3 tarjetas con imágenes */}
-          {nivel.tipo === 'silueta' && (
-              <View style={styles.opcionesSilueta}>
-                {nivel.opcionesAnimales.map((a) => {
-                  const seleccionada = opcionElegida === a.id;
-                  const esCorrecta = a.id === nivel.respuestaCorrecta;
+          {nivel.tipo === "silueta" && (
+            <View style={styles.opcionesSilueta}>
+              {nivel.opcionesAnimales.map((a) => {
+                const seleccionada = opcionElegida === a.id;
+                const esCorrecta = a.id === nivel.respuestaCorrecta;
 
-                  let colorBase = 'rgba(255,255,255,0.75)';
-                  let bordeBase = 'rgba(26,60,94,0.2)';
+                let colorBase = "rgba(255,255,255,0.75)";
+                let bordeBase = "rgba(26,60,94,0.2)";
 
-                  if (respuesta) {
-                    if (esCorrecta) {
-                      colorBase = 'rgba(136,204,136,0.35)';
-                      bordeBase = '#4AAE4A';
-                    } else if (seleccionada) {
-                      colorBase = '#F47C7C';
-                      bordeBase = '#D45A5A';
-                    }
+                if (respuesta) {
+                  if (esCorrecta) {
+                    colorBase = "rgba(136,204,136,0.35)";
+                    bordeBase = "#4AAE4A";
+                  } else if (seleccionada) {
+                    colorBase = "#F47C7C";
+                    bordeBase = "#D45A5A";
                   }
+                }
 
-                  return (
-                    <TouchableOpacity key={a.id}
-                      style={[styles.tarjetaSiluetaOpcion, { backgroundColor: colorBase, borderColor: bordeBase }]}
-                      onPress={() => elegir(a.id)} activeOpacity={0.84} disabled={!!respuesta}>
-                      <Image
-                        source={mostrarColor && esCorrecta ? a.color : a.silueta}
-                        style={styles.siluetaOpcion}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
+                return (
+                  <TouchableOpacity
+                    key={a.id}
+                    style={[
+                      styles.tarjetaSiluetaOpcion,
+                      { backgroundColor: colorBase, borderColor: bordeBase },
+                    ]}
+                    onPress={() => elegir(a.id)}
+                    activeOpacity={0.84}
+                    disabled={!!respuesta}
+                  >
+                    <Image
+                      source={mostrarColor && esCorrecta ? a.color : a.silueta}
+                      style={styles.siluetaOpcion}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
 
           {/* ── Tarjeta "Era:" — solo si la respuesta fue incorrecta ── */}
-          {respuesta === 'incorrecto' && (
-              <View style={styles.tarjetaEra}>
-                {nivel.tipo !== 'silueta' && (
-                  <Text style={styles.textoEra}>
-                    Es:{' '}
-                    <Text style={styles.textoEraDestacado}>{nivel.animal.nombre}</Text>
+          {respuesta === "incorrecto" && (
+            <View style={styles.tarjetaEra}>
+              {nivel.tipo !== "silueta" && (
+                <Text style={styles.textoEra}>
+                  Es:{" "}
+                  <Text style={styles.textoEraDestacado}>
+                    {nivel.animal.nombre}
                   </Text>
-                )}
-                <TouchableOpacity style={styles.botonContinuarEra} onPress={avanzarNivel} activeOpacity={0.85}>
-                  <Text style={styles.textoBotonContinuarEra}>
-                    {indiceNivel + 1 >= totalNiveles ? 'Ver mis resultados →' : 'Siguiente →'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={styles.botonContinuarEra}
+                onPress={avanzarNivel}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.textoBotonContinuarEra}>
+                  {indiceNivel + 1 >= totalNiveles
+                    ? "Ver mis resultados →"
+                    : "Siguiente →"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
 
       {/* ── Overlay de celebración — solo si la respuesta es correcta ── */}
-      {respuesta === 'correcto' && mostrarDato && (
+      {respuesta === "correcto" && mostrarDato && (
         <View style={[styles.overlayCelebracion, styles.overlayCorrecto]}>
           <SafeAreaView style={styles.overlayContenido}>
-
             {/* Fila superior — fija arriba */}
             <View style={styles.overlayFila}>
               <View style={styles.overlayBadgeCategoria}>
                 <Text style={styles.overlayBadgeCategoriaTexto}>Animales</Text>
               </View>
               <View style={styles.overlayBadgeProgreso}>
-                <Text style={styles.overlayBadgeProgresoTexto}>{indiceNivel + 1}/{totalNiveles}</Text>
+                <Text style={styles.overlayBadgeProgresoTexto}>
+                  {indiceNivel + 1}/{totalNiveles}
+                </Text>
               </View>
             </View>
 
@@ -455,9 +641,15 @@ export default function AnimalesScreen({ navigation }) {
 
               <View style={styles.tarjetaResultado}>
                 <View style={styles.circuloResultado}>
-                  <Image source={nivel.animal.color} style={styles.imagenResultado} resizeMode="contain" />
+                  <Image
+                    source={nivel.animal.color}
+                    style={styles.imagenResultado}
+                    resizeMode="contain"
+                  />
                 </View>
-                <Text style={styles.nombreResultado}>{nivel.animal.nombre}</Text>
+                <Text style={styles.nombreResultado}>
+                  {nivel.animal.nombre}
+                </Text>
 
                 <View style={styles.lineaDivisoria} />
 
@@ -467,13 +659,18 @@ export default function AnimalesScreen({ navigation }) {
                 <Text style={styles.textoDato}>{nivel.animal.dato}</Text>
               </View>
 
-              <TouchableOpacity style={styles.botonContinuar} onPress={avanzarNivel} activeOpacity={0.85}>
+              <TouchableOpacity
+                style={styles.botonContinuar}
+                onPress={avanzarNivel}
+                activeOpacity={0.85}
+              >
                 <Text style={styles.textoBotonContinuar}>
-                  {indiceNivel + 1 >= totalNiveles ? 'Ver mis resultados →' : '¡Siguiente silueta! →'}
+                  {indiceNivel + 1 >= totalNiveles
+                    ? "Ver mis resultados →"
+                    : "¡Siguiente silueta! →"}
                 </Text>
               </TouchableOpacity>
             </View>
-
           </SafeAreaView>
         </View>
       )}
@@ -487,37 +684,55 @@ const styles = StyleSheet.create({
   contenidoFin: { flex: 1, paddingHorizontal: 20, paddingTop: 10 },
   scroll: { paddingHorizontal: 20, paddingBottom: 30, paddingTop: 16 },
 
-  burbuja: { position: 'absolute', borderRadius: 999 },
-  burbuja1: { width: 120, height: 120, top: 40, left: -40, backgroundColor: 'rgba(255,255,255,0.10)' },
-  burbuja2: { width: 80, height: 80, top: 180, right: -20, backgroundColor: 'rgba(255,255,255,0.08)' },
-  burbuja3: { width: 60, height: 60, bottom: 200, left: 20, backgroundColor: 'rgba(255,255,255,0.07)' },
+  burbuja: { position: "absolute", borderRadius: 999 },
+  burbuja1: {
+    width: 120,
+    height: 120,
+    top: 40,
+    left: -40,
+    backgroundColor: "rgba(255,255,255,0.10)",
+  },
+  burbuja2: {
+    width: 80,
+    height: 80,
+    top: 180,
+    right: -20,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  burbuja3: {
+    width: 60,
+    height: 60,
+    bottom: 200,
+    left: 20,
+    backgroundColor: "rgba(255,255,255,0.07)",
+  },
 
   // ── Header ──
   headerCoral: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     paddingBottom: 10,
   },
   headerFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 6,
   },
   headerCentro: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   headerTitulo: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 18,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   badgeEstrella: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFC400',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFC400",
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -525,42 +740,42 @@ const styles = StyleSheet.create({
   },
   badgeIcon: { fontSize: 14 },
   badgeNum: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 14,
-    color: '#1A3C5E',
+    color: "#1A3C5E",
   },
   badgeTipo: {
-    alignSelf: 'center',
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderRadius: 999,
     paddingVertical: 4,
     paddingHorizontal: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
+    borderColor: "rgba(255,255,255,0.4)",
   },
   textoBadge: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: "Baloo2_700Bold",
     fontSize: 13,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   barraFondo: {
     marginHorizontal: 16,
     height: 8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 999,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   barraRelleno: {
-    height: '100%',
-    backgroundColor: '#FFC400',
+    height: "100%",
+    backgroundColor: "#FFC400",
     borderRadius: 999,
   },
   textoProgreso: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: "Baloo2_700Bold",
     fontSize: 11,
-    color: 'rgba(255,255,255,0.9)',
-    textAlign: 'left',
+    color: "rgba(255,255,255,0.9)",
+    textAlign: "left",
     paddingHorizontal: 16,
     marginTop: 4,
   },
@@ -569,10 +784,10 @@ const styles = StyleSheet.create({
   tarjetaSilueta: {
     borderRadius: 28,
     borderWidth: 3,
-    borderColor: '#1A3C5E',
-    backgroundColor: '#204972',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#1A3C5E",
+    backgroundColor: "#204972",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
     paddingHorizontal: 16,
     marginBottom: 10,
@@ -582,47 +797,47 @@ const styles = StyleSheet.create({
     width: width * 0.52,
     height: width * 0.52,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(255,255,255,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   silueta: {
     width: width * 0.65,
     height: width * 0.46,
   },
   nombreGrande: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 36,
-    color: '#FFFFFF',
-    textAlign: 'center',
+    color: "#FFFFFF",
+    textAlign: "center",
   },
   textoPista: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: "Baloo2_700Bold",
     fontSize: 13,
-    color: 'rgba(255,255,255,0.9)',
-    textAlign: 'center',
+    color: "rgba(255,255,255,0.9)",
+    textAlign: "center",
     paddingHorizontal: 8,
   },
   nombreDestacado: {
-    color: '#FFC400',
-    fontFamily: 'Baloo2_800ExtraBold',
+    color: "#FFC400",
+    fontFamily: "Baloo2_800ExtraBold",
   },
 
   pregunta: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 18,
-    color: '#1A3C5E',
-    textAlign: 'center',
+    color: "#1A3C5E",
+    textAlign: "center",
     marginBottom: 10,
   },
 
   // ── Opciones tipo nombre ──
   opciones: { gap: 10 },
   botonOpcion: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 18,
@@ -630,24 +845,24 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   numeroOpcion: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 17,
-    color: '#1A3C5E',
+    color: "#1A3C5E",
     width: 24,
   },
   textoOpcion: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 17,
-    color: '#1A3C5E',
+    color: "#1A3C5E",
     flex: 1,
   },
 
   // ── Opciones Sí/No ──
-  opcionesSiNo: { flexDirection: 'row', gap: 12 },
+  opcionesSiNo: { flexDirection: "row", gap: 12 },
   botonSiNo: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 20,
     borderRadius: 22,
     borderWidth: 3,
@@ -656,15 +871,15 @@ const styles = StyleSheet.create({
   textoSiNo: { fontSize: 32 },
 
   // ── Opciones silueta ──
-  opcionesSilueta: { flexDirection: 'row', gap: 10 },
+  opcionesSilueta: { flexDirection: "row", gap: 10 },
   tarjetaSiluetaOpcion: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 20,
     borderWidth: 3,
     paddingVertical: 10,
-    backgroundColor: 'rgba(255,255,255,0.75)',
+    backgroundColor: "rgba(255,255,255,0.75)",
   },
   siluetaOpcion: {
     width: (width - 80) / 3,
@@ -673,46 +888,49 @@ const styles = StyleSheet.create({
 
   // ── Tarjeta "Era:" (respuesta incorrecta) ──
   tarjetaEra: {
-    backgroundColor: 'rgba(244,124,124,0.95)',
+    backgroundColor: "rgba(244,124,124,0.95)",
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#D45A5A',
+    borderColor: "#D45A5A",
     padding: 16,
     marginTop: 14,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 12,
   },
   textoEra: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: "Baloo2_700Bold",
     fontSize: 16,
-    color: '#1A3C5E',
-    textAlign: 'center',
+    color: "#1A3C5E",
+    textAlign: "center",
   },
   textoEraDestacado: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 17,
   },
   botonContinuarEra: {
-    backgroundColor: '#FFC400',
-    width: '100%',
+    backgroundColor: "#FFC400",
+    width: "100%",
     paddingVertical: 12,
     borderRadius: 40,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#1A3C5E',
+    borderColor: "#1A3C5E",
   },
   textoBotonContinuarEra: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 15,
-    color: '#1A3C5E',
+    color: "#1A3C5E",
   },
 
   // ── Overlay de celebración ──
   overlayCelebracion: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
-  overlayCorrecto: { backgroundColor: '#5BAE5B' },
+  overlayCorrecto: { backgroundColor: "#5BAE5B" },
   overlayContenido: {
     flex: 1,
     paddingHorizontal: 20,
@@ -721,132 +939,154 @@ const styles = StyleSheet.create({
   },
 
   overlayFila: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 
   overlayCuerpo: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
   },
   overlayBadgeCategoria: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 14,
   },
   overlayBadgeCategoriaTexto: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: "Baloo2_700Bold",
     fontSize: 13,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   overlayBadgeProgreso: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 14,
   },
   overlayBadgeProgresoTexto: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: "Baloo2_700Bold",
     fontSize: 13,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   overlayTitulo: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 30,
-    color: '#FFFFFF',
-    textAlign: 'center',
+    color: "#FFFFFF",
+    textAlign: "center",
     marginBottom: 20,
   },
 
   tarjetaResultado: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
+    width: "100%",
+    backgroundColor: "#FFFFFF",
     borderRadius: 28,
     paddingVertical: 24,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
     elevation: 8,
-    shadowColor: '#1A3C5E',
+    shadowColor: "#1A3C5E",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
   },
   circuloResultado: {
-    width: width * 0.80,
-    height: width * 0.80,
+    width: width * 0.8,
+    height: width * 0.8,
     borderRadius: 40,
-    backgroundColor: '#1A3C5E',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#1A3C5E",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 14,
   },
   imagenResultado: {
-    width: width * 0.80,
-    height: width * 0.80,
+    width: width * 0.8,
+    height: width * 0.8,
   },
   nombreResultado: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 24,
-    color: '#1A3C5E',
+    color: "#1A3C5E",
     marginBottom: 14,
   },
   lineaDivisoria: {
-    width: '100%',
+    width: "100%",
     height: 1,
-    backgroundColor: 'rgba(26,60,94,0.15)',
+    backgroundColor: "rgba(26,60,94,0.15)",
     marginBottom: 14,
   },
   badgeDato: {
-    backgroundColor: '#6C3FCF',
+    backgroundColor: "#6C3FCF",
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 14,
     marginBottom: 10,
   },
   badgeDatoTexto: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 13,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   textoDato: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: "Baloo2_700Bold",
     fontSize: 15,
-    color: '#1A3C5E',
-    textAlign: 'center',
+    color: "#1A3C5E",
+    textAlign: "center",
     lineHeight: 22,
   },
 
   botonContinuar: {
-    backgroundColor: '#FFC400',
-    width: '100%',
+    backgroundColor: "#FFC400",
+    width: "100%",
     paddingVertical: 18,
     borderRadius: 50,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 3,
-    borderColor: '#1A3C5E',
+    borderColor: "#1A3C5E",
     elevation: 6,
-    shadowColor: '#1A3C5E',
+    shadowColor: "#1A3C5E",
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.25,
   },
   textoBotonContinuar: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 18,
-    color: '#1A3C5E',
+    color: "#1A3C5E",
   },
 
   // ── Pantalla final ──
-  cuerpoFin: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
-  tituloFin: { fontFamily: 'Baloo2_800ExtraBold', fontSize: 30, color: '#FFFFFF', textAlign: 'center' },
-  subtituloFin: { fontFamily: 'Baloo2_700Bold', fontSize: 17, color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
-  filaEstrellasFin: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginVertical: 8, maxWidth: 240 },
+  cuerpoFin: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 14,
+  },
+  tituloFin: {
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 30,
+    color: "#FFFFFF",
+    textAlign: "center",
+  },
+  subtituloFin: {
+    fontFamily: "Baloo2_700Bold",
+    fontSize: 17,
+    color: "rgba(255,255,255,0.85)",
+    textAlign: "center",
+  },
+  filaEstrellasFin: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 6,
+    marginVertical: 8,
+    maxWidth: 240,
+  },
   estrellaFin: { width: 28, height: 28 },
-  estrellaFinVacia: { tintColor: 'rgba(255,255,255,0.35)' },
+  estrellaFinVacia: { tintColor: "rgba(255,255,255,0.35)" },
   botonRegresar: {
     borderRadius: 18,
     borderWidth: 3,

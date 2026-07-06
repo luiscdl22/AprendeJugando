@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,125 +6,207 @@ import {
   TouchableOpacity,
   Image,
   Animated,
-  Easing,
   Dimensions,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { useAudioPlayer } from 'expo-audio';
-import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { useAudioPlayer } from "expo-audio";
+import {
+  useFonts,
+  Baloo2_700Bold,
+  Baloo2_800ExtraBold,
+} from "@expo-google-fonts/baloo-2";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const { width } = Dimensions.get('window');
+import { useFlote } from "../hooks/useFlote";
+import { usePulso } from "../hooks/usePulso";
 
-function useFlote(distancia, duracion, delay = 0) {
-  const valor = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const animacion = Animated.loop(
-      Animated.sequence([
-        Animated.timing(valor, { toValue: 1, duration: duracion, delay, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(valor, { toValue: 0, duration: duracion, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ])
-    );
-    animacion.start();
-    return () => animacion.stop();
-  }, []);
-  return valor.interpolate({ inputRange: [0, 1], outputRange: [0, -distancia] });
-}
+const { width } = Dimensions.get("window");
 
-function useDestello() {
-  const valor = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const animacion = Animated.loop(
-      Animated.sequence([
-        Animated.timing(valor, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-        Animated.timing(valor, { toValue: 0, duration: 900, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-      ])
-    );
-    animacion.start();
-    return () => animacion.stop();
-  }, []);
-  return {
-    scale: valor.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }),
-    rotate: valor.interpolate({ inputRange: [0, 1], outputRange: ['-4deg', '4deg'] }),
-  };
-}
+// ✅ Variable para controlar que solo suene UNA VEZ al iniciar la app
+let audioBienvenidaReproducido = false;
 
 export default function HomeScreen({ navigation }) {
   const [fontsLoaded] = useFonts({ Baloo2_700Bold, Baloo2_800ExtraBold });
   const escalaBoton = useRef(new Animated.Value(1)).current;
-  const sonidoJugar = useAudioPlayer(require('../assets/sounds/jugar.wav'));
+
+  const audioBienvenida = useAudioPlayer(
+    require("../assets/sounds/bienvenida.mp3"),
+  );
 
   const flote1 = useFlote(10, 2600, 0);
   const flote2 = useFlote(14, 3200, 300);
   const flote3 = useFlote(8, 2200, 600);
   const flote4 = useFlote(16, 3600, 150);
-  const floteMascota = useFlote(7, 2400, 0);
-  const destello = useDestello();
+  const floteBuho = useFlote(7, 2400, 0);
+  const pulsoBoton = usePulso(1.06, 700);
 
   const entradaEstrella = useRef(new Animated.Value(0)).current;
   const entradaTitulo = useRef(new Animated.Value(0)).current;
-  const entradaMascota = useRef(new Animated.Value(0)).current;
+  const entradaBuho = useRef(new Animated.Value(0)).current;
   const entradaBoton = useRef(new Animated.Value(0)).current;
 
+  // ✅ Reproducir audio SOLO al montar la pantalla (cuando se abre la app)
   useEffect(() => {
+    // Animaciones de entrada
     Animated.stagger(150, [
-      Animated.spring(entradaEstrella, { toValue: 1, friction: 5, useNativeDriver: true }),
-      Animated.spring(entradaTitulo,  { toValue: 1, friction: 6, useNativeDriver: true }),
-      Animated.spring(entradaMascota, { toValue: 1, friction: 6, useNativeDriver: true }),
-      Animated.spring(entradaBoton,   { toValue: 1, friction: 6, useNativeDriver: true }),
+      Animated.spring(entradaEstrella, {
+        toValue: 1,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+      Animated.spring(entradaTitulo, {
+        toValue: 1,
+        friction: 6,
+        useNativeDriver: true,
+      }),
+      Animated.spring(entradaBuho, {
+        toValue: 1,
+        friction: 6,
+        useNativeDriver: true,
+      }),
+      Animated.spring(entradaBoton, {
+        toValue: 1,
+        friction: 6,
+        useNativeDriver: true,
+      }),
     ]).start();
+
+    // ✅ SOLO reproducir si NO se ha reproducido antes en esta sesión
+    if (!audioBienvenidaReproducido && audioBienvenida) {
+      const timer = setTimeout(async () => {
+        try {
+          await audioBienvenida.seekTo(0);
+          await audioBienvenida.play();
+          audioBienvenidaReproducido = true;
+        } catch (error) {
+          console.log("Audio de bienvenida no disponible");
+        }
+      }, 600);
+
+      return () => {
+        clearTimeout(timer);
+        if (audioBienvenida) {
+          try {
+            audioBienvenida.pause();
+          } catch (e) {}
+        }
+      };
+    }
+
+    // ✅ Si ya se reprodujo, solo limpiamos al desmontar
+    return () => {
+      if (audioBienvenida) {
+        try {
+          audioBienvenida.pause();
+        } catch (e) {}
+      }
+    };
   }, []);
+
+  // ✅ Detener audio cuando la pantalla pierde foco (navegación)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      if (audioBienvenida) {
+        try {
+          audioBienvenida.pause();
+        } catch (e) {}
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, audioBienvenida]);
 
   if (!fontsLoaded) {
     return <View style={styles.fondo} />;
   }
 
   const presionarBoton = () => {
-    Animated.spring(escalaBoton, { toValue: 0.92, useNativeDriver: true, speed: 50 }).start();
+    Animated.spring(escalaBoton, {
+      toValue: 0.92,
+      useNativeDriver: true,
+      speed: 50,
+    }).start();
   };
 
   const soltarBoton = () => {
-    Animated.spring(escalaBoton, { toValue: 1, useNativeDriver: true, friction: 3 }).start();
+    Animated.spring(escalaBoton, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 3,
+    }).start();
   };
 
   const handleJugar = async () => {
-    try { sonidoJugar.seekTo(0); sonidoJugar.play(); } catch (_) {}
+    // ✅ Detener audio ANTES de navegar
+    if (audioBienvenida) {
+      try {
+        await audioBienvenida.pause();
+        await audioBienvenida.seekTo(0);
+      } catch (e) {}
+    }
+
     try {
-      const perfilGuardado = await AsyncStorage.getItem('perfil');
-      // Si ya hay perfil va directo al menú principal, si no al onboarding
-      navigation.navigate(perfilGuardado ? 'Menu' : 'Bienvenida');
+      const perfilGuardado = await AsyncStorage.getItem("perfil");
+      navigation.navigate(perfilGuardado ? "Menu" : "Bienvenida");
     } catch (e) {
-      navigation.navigate('Bienvenida');
+      navigation.navigate("Bienvenida");
     }
   };
 
   return (
     <LinearGradient
-      colors={['#6C3FCF', '#4A6FD4', '#E8F4FD']}
+      colors={["#6C3FCF", "#4A6FD4", "#E8F4FD"]}
       start={{ x: 0.2, y: 0 }}
       end={{ x: 0.8, y: 1 }}
       style={styles.fondo}
     >
       <StatusBar style="light" />
 
-      {/* Círculos animados — solo colores cambiados */}
-      <Animated.View style={[styles.circulo, styles.circulo1, { transform: [{ translateY: flote1 }] }]} />
-      <Animated.View style={[styles.circulo, styles.circulo2, { transform: [{ translateY: flote2 }] }]} />
-      <Animated.View style={[styles.circulo, styles.circulo3, { transform: [{ translateY: flote3 }] }]} />
-      <Animated.View style={[styles.circulo, styles.circulo4, { transform: [{ translateY: flote4 }] }]} />
+      <Animated.View
+        style={[
+          styles.circulo,
+          styles.circulo1,
+          { transform: [{ translateY: flote1 }] },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.circulo,
+          styles.circulo2,
+          { transform: [{ translateY: flote2 }] },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.circulo,
+          styles.circulo3,
+          { transform: [{ translateY: flote3 }] },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.circulo,
+          styles.circulo4,
+          { transform: [{ translateY: flote4 }] },
+        ]}
+      />
 
       <SafeAreaView style={styles.contenido}>
         <View style={styles.bloqueSuperior}>
-          <Animated.View style={{ opacity: entradaEstrella, transform: [{ scale: entradaEstrella }] }}>
-            <Animated.View style={{ transform: [{ scale: destello.scale }, { rotate: destello.rotate }] }}>
-              <Image
-                source={require('../assets/images/estrella.png')}
-                style={styles.estrellaImg}
-                resizeMode="contain"
-              />
-            </Animated.View>
+          <Animated.View
+            style={{
+              opacity: entradaEstrella,
+              transform: [{ scale: entradaEstrella }],
+            }}
+          >
+            <Image
+              source={require("../assets/images/estrella.png")}
+              style={styles.estrellaImg}
+              resizeMode="contain"
+            />
           </Animated.View>
 
           <Animated.Text
@@ -132,26 +214,40 @@ export default function HomeScreen({ navigation }) {
               styles.titulo,
               {
                 opacity: entradaTitulo,
-                transform: [{ translateY: entradaTitulo.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }],
+                transform: [
+                  {
+                    translateY: entradaTitulo.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [-20, 0],
+                    }),
+                  },
+                ],
               },
             ]}
           >
-            Aprende Jugando{'\n'}con <Text style={styles.tituloAcento}>Siluetas!</Text>
+            Aprende con Siluetas
           </Animated.Text>
         </View>
 
-        <View style={styles.escenarioMascota}>
+        <View style={styles.escenarioBuho}>
           <View style={styles.plataforma} />
           <Animated.View
             style={{
-              opacity: entradaMascota,
-              transform: [{ scale: entradaMascota.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }],
+              opacity: entradaBuho,
+              transform: [
+                {
+                  scale: entradaBuho.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.8, 1],
+                  }),
+                },
+              ],
             }}
           >
-            <Animated.View style={{ transform: [{ translateY: floteMascota }] }}>
+            <Animated.View style={{ transform: [{ translateY: floteBuho }] }}>
               <Image
-                source={require('../assets/images/mascota.png')}
-                style={styles.mascotaImg}
+                source={require("../assets/images/mascota.png")}
+                style={styles.buhoImg}
                 resizeMode="contain"
               />
             </Animated.View>
@@ -163,23 +259,40 @@ export default function HomeScreen({ navigation }) {
             styles.bloqueInferior,
             {
               opacity: entradaBoton,
-              transform: [{ translateY: entradaBoton.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
+              transform: [
+                {
+                  translateY: entradaBoton.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                },
+              ],
             },
           ]}
         >
-          <Text style={styles.ayuda}>Toca el boton para empezar!</Text>
+          <View style={styles.ayuda}>
+            <Ionicons name="hand-left" size={18} color="#1A3C5E" />
+            <Text style={styles.ayudaTexto}>Toca el botón para empezar</Text>
+          </View>
 
-          <TouchableOpacity
-            style={styles.botonContenedor}
-            activeOpacity={1}
-            onPressIn={presionarBoton}
-            onPressOut={soltarBoton}
-            onPress={handleJugar}
+          <Animated.View
+            style={{ transform: [{ scale: pulsoBoton }], width: "100%" }}
           >
-            <Animated.View style={[styles.boton, { transform: [{ scale: escalaBoton }] }]}>
-              <Text style={styles.textoBoton}>JUGAR!</Text>
-            </Animated.View>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botonContenedor}
+              activeOpacity={1}
+              onPressIn={presionarBoton}
+              onPressOut={soltarBoton}
+              onPress={handleJugar}
+            >
+              <Animated.View
+                style={[styles.boton, { transform: [{ scale: escalaBoton }] }]}
+              >
+                <Text style={styles.textoBoton}>JUGAR</Text>
+                <Ionicons name="arrow-forward" size={28} color="#FFFFFF" />
+              </Animated.View>
+            </TouchableOpacity>
+          </Animated.View>
         </Animated.View>
       </SafeAreaView>
     </LinearGradient>
@@ -190,68 +303,109 @@ const styles = StyleSheet.create({
   fondo: { flex: 1 },
   contenido: {
     flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 24,
     paddingVertical: 30,
   },
 
-  // Círculos — mismas posiciones/tamaños, colores actualizados a celeste/coral/verde
-  circulo: { position: 'absolute', borderRadius: 999 },
-  circulo1: { width: 110, height: 110, top: 60,    left: -20,  backgroundColor: 'rgba(255,255,255,0.10)' },
-  circulo2: { width: 70,  height: 70,  top: 130,   right: -10, backgroundColor: 'rgba(255,255,255,0.08)'   },
-  circulo3: { width: 60,  height: 60,  top: width * 0.6, left: 10, backgroundColor: 'rgba(255,255,255,0.10)' },
-  circulo4: { width: 130, height: 130, bottom: 160, right: -30, backgroundColor: 'rgba(255,255,255,0.07)'  },
+  circulo: { position: "absolute", borderRadius: 999 },
+  circulo1: {
+    width: 110,
+    height: 110,
+    top: 60,
+    left: -20,
+    backgroundColor: "rgba(255,255,255,0.10)",
+  },
+  circulo2: {
+    width: 70,
+    height: 70,
+    top: 130,
+    right: -10,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  circulo3: {
+    width: 60,
+    height: 60,
+    top: width * 0.6,
+    left: 10,
+    backgroundColor: "rgba(255,255,255,0.10)",
+  },
+  circulo4: {
+    width: 130,
+    height: 130,
+    bottom: 160,
+    right: -30,
+    backgroundColor: "rgba(255,255,255,0.07)",
+  },
 
-  bloqueSuperior: { alignItems: 'center', marginTop: 10 },
+  bloqueSuperior: { alignItems: "center", marginTop: 10 },
   estrellaImg: { width: 70, height: 70 },
   titulo: {
-    fontFamily: 'Baloo2_800ExtraBold',
-    fontSize: 32,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    lineHeight: 40,
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 34,
+    color: "#FFFFFF",
+    textAlign: "center",
+    lineHeight: 42,
     marginTop: 8,
+    textShadowColor: "rgba(0,0,0,0.15)",
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6,
   },
-  tituloAcento: { color: '#FFD166' },
 
-  escenarioMascota: { alignItems: 'center', justifyContent: 'flex-end' },
-  plataforma: {
-    position: 'absolute',
-    bottom: 14,
-    width: 190,
-    height: 32,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+  escenarioBuho: {
+    alignItems: "center",
+    justifyContent: "flex-end",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
   },
-  mascotaImg: { width: 270, height: 270 },
 
-  bloqueInferior: { alignItems: 'center', width: '100%' },
-  botonContenedor: { width: '100%' },
+  buhoImg: { width: 350, height: 350 },
+
+  bloqueInferior: {
+    alignItems: "center",
+    width: "100%",
+  },
+  ayuda: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 14,
+  },
+  ayudaTexto: {
+    fontFamily: "Baloo2_700Bold",
+    fontSize: 15,
+    color: "#1A3C5E",
+  },
+  botonContenedor: { width: "100%" },
   boton: {
-    backgroundColor: '#FFC400',
+    backgroundColor: "#FFC400",
     paddingVertical: 18,
-    width: '100%',
+    width: "100%",
     borderRadius: 50,
-    alignItems: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 12,
     borderWidth: 4,
-    borderColor: '#1A3C5E',
-    shadowColor: '#1A3C5E',
+    borderColor: "#1A3C5E",
+    shadowColor: "#1A3C5E",
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.30,
+    shadowOpacity: 0.3,
     shadowRadius: 0,
     elevation: 8,
   },
   textoBoton: {
-    fontFamily: 'Baloo2_800ExtraBold',
+    fontFamily: "Baloo2_800ExtraBold",
     fontSize: 24,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     letterSpacing: 0.5,
-  },
-  ayuda: {
-    marginBottom: 14,
-    fontSize: 14,
-    color: '#1A3C5E',
-    fontWeight: '700',
   },
 });

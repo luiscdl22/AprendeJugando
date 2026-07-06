@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 
 import GameCard from '../components/GameCard';
 import { useStars } from '../context/StarContext';
@@ -68,7 +69,7 @@ const CATEGORIAS = [
     titulo: 'Naturaleza',
     subtitulo: 'Adivina el elemento',
     color: '#4CAF7A',
-    icono: require('../assets/images/cat_frutas.png'), // ⚠️ ícono temporal
+    icono: require('../assets/images/cat_animales.png'), // ⚠️ Reemplazar con icono propio
     ruta: 'Naturaleza',
   },
 ];
@@ -104,6 +105,32 @@ function useFlote(distancia, duracion, delay = 0) {
   return valor.interpolate({ inputRange: [0, 1], outputRange: [0, -distancia] });
 }
 
+// Animación de pulso para el botón "¿Cómo se juega?"
+function usePulso() {
+  const valor = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const pulsar = Animated.loop(
+      Animated.sequence([
+        Animated.timing(valor, {
+          toValue: 1.05,
+          duration: 800,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(valor, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulsar.start();
+    return () => pulsar.stop();
+  }, []);
+  return valor;
+}
+
 export default function MenuScreen({ navigation }) {
   const [fontsLoaded] = useFonts({ Baloo2_700Bold, Baloo2_800ExtraBold });
   const [perfil, setPerfil] = useState(null);
@@ -116,6 +143,7 @@ export default function MenuScreen({ navigation }) {
   const flote1 = useFlote(12, 2800, 0);
   const flote2 = useFlote(18, 3400, 200);
   const flote3 = useFlote(10, 2600, 400);
+  const pulsoBoton = usePulso();
 
   useEffect(() => {
     const cargar = async () => {
@@ -255,13 +283,25 @@ export default function MenuScreen({ navigation }) {
           >
             <View style={styles.filaSeccion}>
               <Text style={styles.tituloSeccion}>Categorías</Text>
-              <TouchableOpacity
-                style={styles.botonComoJugar}
-                onPress={() => navigation.navigate('ComoJugar')}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.textoComoJugar}>¿Cómo jugar?</Text>
-              </TouchableOpacity>
+              
+              {/* Botón "¿Cómo se juega?" con animación de pulso */}
+              <Animated.View style={{ transform: [{ scale: pulsoBoton }] }}>
+                <TouchableOpacity
+                  style={styles.botonComoJugar}
+                  onPress={() => navigation.navigate('ComoJugar')}
+                  activeOpacity={0.85}
+                >
+                  <LinearGradient
+                    colors={['#FFD166', '#FF9F43']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.botonComoJugarGradient}
+                  >
+                    <Ionicons name="help-circle" size={22} color="#1A365D" />
+                    <Text style={styles.textoComoJugar}>¿Cómo se juega?</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
             </View>
 
             <View style={styles.gridCategorias}>
@@ -449,20 +489,30 @@ const styles = StyleSheet.create({
     color: theme.text,
   },
   botonComoJugar: {
-    backgroundColor: 'rgba(255,255,255,0.85)',
     borderRadius: 50,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    elevation: 2,
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: '#1A365D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 0,
+  },
+  botonComoJugarGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 2.5,
+    borderColor: '#1A3C5E',
+    borderRadius: 50,
   },
   textoComoJugar: {
-    fontFamily: 'Baloo2_700Bold',
+    fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 13,
-    color: theme.text,
+    color: '#1A365D',
   },
-  cardUnicaWrap: {
-    marginBottom: 12,
-  },
+
   gridCategorias: {
     flexDirection: 'row',
     flexWrap: 'wrap',
