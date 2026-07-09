@@ -1,3 +1,4 @@
+// screens/ComoJugar.js
 import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
@@ -47,7 +48,7 @@ const PASOS = [
     titulo: "Elige tu Respuesta",
     descripcion: "Lee la pregunta y toca la opción correcta",
     color: "#FFB347",
-    imagen: require("../assets/images/cat_animales.png"),
+    imagen: require("../assets/images/Animales/gato color.png"),
     audio: require("../assets/sounds/paso3.mp3"),
   },
   {
@@ -95,6 +96,7 @@ export default function ComoJugar({ navigation }) {
   const [pasoActual, setPasoActual] = useState(0);
   const [mostrandoDemo, setMostrandoDemo] = useState(false);
   const [mostrandoIntro, setMostrandoIntro] = useState(true);
+  const [procesando, setProcesando] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const floteBuho = useFlote(6, 2400, 0);
@@ -106,87 +108,73 @@ export default function ComoJugar({ navigation }) {
 
   const introAudio = useAudioPlayer(require("../assets/sounds/intro.mp3"));
   const pasoAudio = useAudioPlayer(paso?.audio || null);
-  const finalAudio = useAudioPlayer(require("../assets/sounds/final_listo.mp3"));
+  const finalAudio = useAudioPlayer(
+    require("../assets/sounds/final_listo.mp3"),
+  );
 
-  // Reproducir audio de introducción al entrar
+  // ============================================================
+  // AUDIO CENTRALIZADO - UN SOLO useEffect PARA TODOS
+  // ============================================================
   useEffect(() => {
-    if (mostrandoIntro && introAudio) {
-      const timer = setTimeout(async () => {
-        try {
+    const reproducirAudio = async () => {
+      try {
+        // Detener todos los audios primero
+        await Promise.all([
+          introAudio?.pause(),
+          pasoAudio?.pause(),
+          finalAudio?.pause(),
+        ]);
+
+        // Pequeño delay para evitar conflictos
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Reproducir el audio correspondiente
+        if (mostrandoIntro && introAudio) {
           await introAudio.seekTo(0);
           await introAudio.play();
-        } catch (error) {
-          console.log("Intro audio no disponible");
-        }
-      }, 400);
-      return () => {
-        clearTimeout(timer);
-        if (introAudio) {
-          try {
-            introAudio.pause();
-          } catch (e) {}
-        }
-      };
-    }
-  }, [mostrandoIntro, introAudio]);
-
-  // Reproducir audio del paso automáticamente al entrar
-  useEffect(() => {
-    if (!mostrandoIntro && !mostrandoDemo && pasoAudio) {
-      if (introAudio) {
-        try {
-          introAudio.pause();
-        } catch (e) {}
-      }
-
-      const timer = setTimeout(async () => {
-        try {
-          await pasoAudio.seekTo(0);
-          await pasoAudio.play();
-        } catch (error) {
-          console.log("Audio no disponible");
-        }
-      }, 500);
-
-      return () => {
-        clearTimeout(timer);
-        if (pasoAudio) {
-          try {
-            pasoAudio.pause();
-          } catch (e) {}
-        }
-      };
-    }
-  }, [pasoActual, mostrandoIntro, mostrandoDemo, pasoAudio, introAudio]);
-
-  // Reproducir audio final al entrar a la demo
-  useEffect(() => {
-    if (mostrandoDemo && finalAudio) {
-      const timer = setTimeout(async () => {
-        try {
+        } else if (mostrandoDemo && finalAudio) {
           await finalAudio.seekTo(0);
           await finalAudio.play();
-        } catch (error) {
-          console.log("Audio final no disponible");
+        } else if (!mostrandoIntro && !mostrandoDemo && pasoAudio) {
+          await pasoAudio.seekTo(0);
+          await pasoAudio.play();
         }
-      }, 500);
-      return () => {
-        clearTimeout(timer);
-        if (finalAudio) {
-          try {
-            finalAudio.pause();
-          } catch (e) {}
-        }
-      };
-    }
-  }, [mostrandoDemo, finalAudio]);
+      } catch (error) {
+        console.log("Audio no disponible");
+      }
+    };
 
-  const avanzar = () => {
-    if (pasoAudio) {
+    const timer = setTimeout(reproducirAudio, 400);
+    return () => {
+      clearTimeout(timer);
+      // Limpiar al desmontar
       try {
-        pasoAudio.pause();
+        introAudio?.pause();
+        pasoAudio?.pause();
+        finalAudio?.pause();
       } catch (e) {}
-    }
+    };
+  }, [
+    pasoActual,
+    mostrandoIntro,
+    mostrandoDemo,
+    introAudio,
+    pasoAudio,
+    finalAudio,
+  ]);
+
+  if (!fontsLoaded) return null;
+
+  // ============================================================
+  // FUNCIONES DE NAVEGACIÓN CON PROTECCIÓN CONTRA DOBLE CLIC
+  // ============================================================
+  const avanzar = () => {
+    if (procesando) return;
+    setProcesando(true);
+
+    try {
+      pasoAudio?.pause();
+    } catch (e) {}
 
     if (pasoActual < PASOS.length - 1) {
       setPasoActual(pasoActual + 1);
@@ -199,53 +187,70 @@ export default function ComoJugar({ navigation }) {
     } else {
       setMostrandoDemo(true);
     }
+
+    setTimeout(() => setProcesando(false), 400);
+  };
+
+  const retroceder = () => {
+    if (procesando || pasoActual === 0) return;
+    setProcesando(true);
+
+    try {
+      pasoAudio?.pause();
+    } catch (e) {}
+
+    setPasoActual(pasoActual - 1);
+    scaleAnim.setValue(0.92);
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 6,
+      useNativeDriver: true,
+    }).start();
+
+    setTimeout(() => setProcesando(false), 400);
   };
 
   const irAlMenu = () => {
-    if (pasoAudio) {
-      try {
-        pasoAudio.pause();
-      } catch (e) {}
-    }
-    if (introAudio) {
-      try {
-        introAudio.pause();
-      } catch (e) {}
-    }
-    if (finalAudio) {
-      try {
-        finalAudio.pause();
-      } catch (e) {}
-    }
+    if (procesando) return;
+    setProcesando(true);
+
+    try {
+      introAudio?.pause();
+      pasoAudio?.pause();
+      finalAudio?.pause();
+    } catch (e) {}
+
     navigation.goBack();
+    setTimeout(() => setProcesando(false), 400);
   };
 
   const irAlPaso1 = () => {
-    if (pasoAudio) {
-      try {
-        pasoAudio.pause();
-      } catch (e) {}
-    }
-    if (finalAudio) {
-      try {
-        finalAudio.pause();
-      } catch (e) {}
-    }
+    if (procesando) return;
+    setProcesando(true);
+
+    try {
+      pasoAudio?.pause();
+      finalAudio?.pause();
+    } catch (e) {}
+
     setPasoActual(0);
     setMostrandoDemo(false);
     scaleAnim.setValue(1);
+
+    setTimeout(() => setProcesando(false), 400);
   };
 
   const iniciarTutorial = () => {
-    if (introAudio) {
-      try {
-        introAudio.pause();
-      } catch (e) {}
-    }
-    setMostrandoIntro(false);
-  };
+    if (procesando) return;
+    setProcesando(true);
 
-  if (!fontsLoaded) return null;
+    try {
+      introAudio?.pause();
+    } catch (e) {}
+
+    setMostrandoIntro(false);
+    setTimeout(() => setProcesando(false), 400);
+  };
 
   // ============================================================
   // PANTALLA DE INTRODUCCIÓN
@@ -306,6 +311,7 @@ export default function ComoJugar({ navigation }) {
             style={styles.botonComenzar}
             onPress={iniciarTutorial}
             activeOpacity={0.8}
+            disabled={procesando}
           >
             <LinearGradient
               colors={["#FFD166", "#FFC400"]}
@@ -367,13 +373,16 @@ export default function ComoJugar({ navigation }) {
               ]}
             >
               <Text style={styles.demoTitulo}>Genial!</Text>
-              <Text style={styles.demoSubtitulo}>Quieres que te lo repita?</Text>
+              <Text style={styles.demoSubtitulo}>
+                Quieres que te lo repita?
+              </Text>
 
               <View style={styles.demoBotones}>
                 <TouchableOpacity
                   style={styles.botonSi}
                   onPress={irAlPaso1}
                   activeOpacity={0.8}
+                  disabled={procesando}
                 >
                   <LinearGradient
                     colors={["#4CAF7A", "#388E3C"]}
@@ -389,6 +398,7 @@ export default function ComoJugar({ navigation }) {
                   style={styles.botonNo}
                   onPress={irAlMenu}
                   activeOpacity={0.8}
+                  disabled={procesando}
                 >
                   <LinearGradient
                     colors={["#F47C7C", "#D45A5A"]}
@@ -403,8 +413,10 @@ export default function ComoJugar({ navigation }) {
             </Animated.View>
           </View>
 
-          {/* Búho en esquina */}
-          <View style={[styles.bloqueBuhoDialogo, { pointerEvents: "box-none" }]}>
+          {/* Búho en esquina - posiciones originales SIN MODIFICAR */}
+          <View
+            style={[styles.bloqueBuhoDialogo, { pointerEvents: "box-none" }]}
+          >
             <Animated.View
               style={[
                 styles.buhoEsquina,
@@ -432,7 +444,7 @@ export default function ComoJugar({ navigation }) {
   }
 
   // ============================================================
-  // TUTORIAL PASO A PASO - SIN BOTÓN REGRESAR
+  // TUTORIAL PASO A PASO - CON BOTÓN ATRÁS
   // ============================================================
   return (
     <LinearGradient
@@ -459,9 +471,20 @@ export default function ComoJugar({ navigation }) {
       />
 
       <SafeAreaView style={styles.contenido}>
-        {/* Header - SOLO PUNTOS DE PROGRESO, SIN BOTÓN REGRESAR */}
+        {/* Header CON BOTÓN ATRÁS + PUNTOS DE PROGRESO */}
         <View style={styles.header}>
-          <View style={styles.headerLeft} />
+          <TouchableOpacity
+            style={[
+              styles.botonAtras,
+              pasoActual === 0 && styles.botonAtrasDisabled,
+            ]}
+            onPress={retroceder}
+            activeOpacity={0.7}
+            disabled={pasoActual === 0 || procesando}
+          >
+            <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+          </TouchableOpacity>
+
           <View style={styles.progresoPuntos}>
             {PASOS.map((_, index) => (
               <View
@@ -474,6 +497,9 @@ export default function ComoJugar({ navigation }) {
               />
             ))}
           </View>
+
+          {/* Espaciador para mantener centrado */}
+          <View style={{ width: 40 }} />
         </View>
 
         <View style={styles.contenidoPrincipal}>
@@ -496,6 +522,7 @@ export default function ComoJugar({ navigation }) {
             style={styles.botonSiguiente}
             onPress={avanzar}
             activeOpacity={0.8}
+            disabled={procesando}
           >
             <LinearGradient
               colors={["#FFD166", "#FFC400"]}
@@ -513,6 +540,7 @@ export default function ComoJugar({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        {/* Búho + Globo - posiciones ORIGINALES SIN MODIFICAR */}
         <View style={[styles.bloqueBuhoDialogo, { pointerEvents: "box-none" }]}>
           <Animated.View
             style={[
@@ -593,8 +621,8 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   buhoIntro: {
-    width: width * 0.90,
-    height: width * 0.90,
+    width: width * 0.9,
+    height: width * 0.9,
   },
   globoIntro: {
     position: "absolute",
@@ -675,8 +703,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     zIndex: 20,
   },
-  headerLeft: {
+  botonAtras: {
     width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.3)",
+  },
+  botonAtrasDisabled: {
+    opacity: 0.3,
   },
   progresoPuntos: {
     flexDirection: "row",
@@ -792,6 +830,9 @@ const styles = StyleSheet.create({
     color: "#1A365D",
   },
 
+  // ============================================================
+  // BÚHO + GLOBO - POSICIONES ORIGINALES SIN MODIFICAR
+  // ============================================================
   bloqueBuhoDialogo: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -873,7 +914,7 @@ const styles = StyleSheet.create({
   },
   demoTitulo: {
     fontFamily: "Baloo2_800ExtraBold",
-    fontSize: width * 0.10,
+    fontSize: width * 0.1,
     color: "#1A365D",
     marginBottom: 8,
     textAlign: "center",
