@@ -623,6 +623,7 @@ const styles = StyleSheet.create({
   buhoIntro: {
     width: width * 0.9,
     height: width * 0.9,
+    marginTop: 60,
   },
   globoIntro: {
     position: "absolute",
@@ -655,10 +656,10 @@ const styles = StyleSheet.create({
   },
   globoIntroTexto: {
     fontFamily: "Baloo2_700Bold",
-    fontSize: width * 0.05,
+    fontSize: width * 0.045,
     color: "#1A365D",
     textAlign: "center",
-    lineHeight: width * 0.05,
+    lineHeight: width * 0.06,
   },
   botonComenzar: {
     width: "100%",

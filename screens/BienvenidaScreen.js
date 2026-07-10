@@ -1,3 +1,4 @@
+// screens/BienvenidaScreen.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
@@ -51,6 +52,14 @@ const AVATARES = [
     imagen: require("../assets/images/avatar5.png"),
     nombre: "Amigable",
   },
+];
+
+// ─── OPCIONES DE EDAD SIMPLIFICADAS ────────────────────────
+const OPCIONES_EDAD = [
+  { id: "4", icono: "leaf-outline" },
+  { id: "5", icono: "flower-outline" },
+  { id: "6", icono: "rocket-outline" },
+  { id: "7", icono: "school-outline" },
 ];
 
 const TOTAL_PASOS = 3;
@@ -340,28 +349,38 @@ export default function BienvenidaScreen({ navigation }) {
               )}
 
               {paso === 2 && (
-                <View style={styles.gridEdades}>
-                  {["5", "6", "7", "8", "9", "10"].map((e) => (
-                    <TouchableOpacity
-                      key={e}
-                      onPress={() => setEdad(e)}
-                      style={[
-                        styles.btnEdad,
-                        edad === e && styles.btnEdadSeleccionado,
-                      ]}
-                      activeOpacity={0.8}
-                      disabled={navegando || cargando}
-                    >
-                      <Text
+                <View style={styles.contenedorEdad}>
+                  <Text style={styles.textoAyudaEdad}>
+                    ¿Cuántos años tienes?
+                  </Text>
+                  <View style={styles.gridEdades}>
+                    {OPCIONES_EDAD.map((opcion) => (
+                      <TouchableOpacity
+                        key={opcion.id}
+                        onPress={() => setEdad(opcion.id)}
                         style={[
-                          styles.textoEdad,
-                          edad === e && styles.textoEdadSeleccionado,
+                          styles.btnEdad,
+                          edad === opcion.id && styles.btnEdadSeleccionado,
                         ]}
+                        activeOpacity={0.8}
+                        disabled={navegando || cargando}
                       >
-                        {e}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Ionicons
+                          name={opcion.icono}
+                          size={38}
+                          color={edad === opcion.id ? "#6C3FCF" : "#1A365D"}
+                        />
+                        <Text
+                          style={[
+                            styles.textoEdad,
+                            edad === opcion.id && styles.textoEdadSeleccionado,
+                          ]}
+                        >
+                          {opcion.id}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               )}
 
@@ -435,6 +454,7 @@ export default function BienvenidaScreen({ navigation }) {
               style={[
                 styles.buhoEsquina,
                 { transform: [{ translateY: floteBuho }] },
+                { pointerEvents: "none" }
               ]}
             >
               <Image
@@ -576,6 +596,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  // ─── ESTILOS PARA SELECTOR VISUAL DE EDAD ───
+  contenedorEdad: {
+    width: "100%",
+    alignItems: "center",
+  },
+  textoAyudaEdad: {
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 22,
+    color: "#1A365D",
+    textAlign: "center",
+    marginBottom: 16,
+  },
   gridEdades: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -583,13 +615,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   btnEdad: {
-    width: 76,
-    height: 68,
+    width: (width - 100) / 4,
+    minWidth: 60,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
     borderRadius: 18,
     backgroundColor: "#F4F7FB",
-    justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2.5,
+    borderWidth: 3,
     borderColor: "transparent",
     elevation: 2,
   },
@@ -598,14 +631,16 @@ const styles = StyleSheet.create({
     borderColor: "#FFD166",
   },
   textoEdad: {
-    fontSize: 28,
     fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 28,
     color: "#1A365D",
+    marginTop: 2,
   },
   textoEdadSeleccionado: {
     color: "#6C3FCF",
   },
 
+  // ─── ESTILOS AVATARES ───
   gridAvatares: {
     flexDirection: "row",
     flexWrap: "wrap",

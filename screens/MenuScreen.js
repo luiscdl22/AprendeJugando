@@ -69,7 +69,7 @@ const CATEGORIAS = [
     titulo: 'Naturaleza',
     subtitulo: 'Adivina el elemento',
     color: '#4CAF7A',
-    icono: require('../assets/images/cat_animales.png'), // ⚠️ Reemplazar con icono propio
+    icono: require('../assets/images/cat_naturaleza.png'), 
     ruta: 'Naturaleza',
   },
 ];

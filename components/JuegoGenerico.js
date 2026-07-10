@@ -1,5 +1,4 @@
 // components/JuegoGenerico.js
-// 🎮 COMPONENTE GENÉRICO PARA TODAS LAS CATEGORÍAS
 
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -29,8 +28,6 @@ import { useStars } from "../context/StarContext";
 import CustomButton from "../components/CustomButton";
 
 const { width } = Dimensions.get("window");
-
-// ─── FUNCIONES DE UTILIDAD ───────────────────────────────────
 
 function mezclar(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -83,8 +80,6 @@ function generarNiveles(datos, tipos) {
   });
 }
 
-// ─── HOOK DE FLOTACIÓN ────────────────────────────────────────
-
 function useFlote(distancia, duracion, delay = 0) {
   const valor = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -113,8 +108,6 @@ function useFlote(distancia, duracion, delay = 0) {
     outputRange: [0, -distancia],
   });
 }
-
-// ─── COMPONENTE PRINCIPAL ────────────────────────────────────
 
 export default function JuegoGenerico({
   datos,
@@ -161,13 +154,9 @@ export default function JuegoGenerico({
   const nivel = niveles[indiceNivel];
   const totalNiveles = niveles.length;
 
-  // ─── AUDIOS ──────────────────────────────────────────────────
-
   const animalAudio = useAudioPlayer(nivel?.item?.datoAudio || null);
   const aciertoSound = useAudioPlayer(require("../assets/sounds/acierto.mp3"));
   const errorSound = useAudioPlayer(require("../assets/sounds/error.mp3"));
-
-  // ─── EFECTOS ──────────────────────────────────────────────────
 
   useEffect(() => {
     if (finalizado) {
@@ -176,14 +165,12 @@ export default function JuegoGenerico({
     }
   }, [actualizarEstrellas, categoria, finalizado, puntos]);
 
-  // Reproducir audio cuando acierta CON DELAYS
   useEffect(() => {
     if (respuesta === "correcto" && mostrarDato) {
       setMostrarOverlay(true);
       setMostrarCorrecto(true);
       setMostrarInfo(false);
 
-      // Animación de entrada del overlay
       Animated.parallel([
         Animated.spring(overlayScale, {
           toValue: 1,
@@ -198,7 +185,6 @@ export default function JuegoGenerico({
         }),
       ]).start();
 
-      // Animación de "CORRECTO!" con efecto de rebote
       Animated.parallel([
         Animated.spring(correctoScale, {
           toValue: 1,
@@ -213,13 +199,11 @@ export default function JuegoGenerico({
         }),
       ]).start();
 
-      // Sonido de celebración INMEDIATO
       try {
         aciertoSound?.seekTo(0);
         aciertoSound?.play();
       } catch (e) {}
 
-      // Esperar 1.8 segundos y mostrar la información
       setTimeout(() => {
         setMostrarCorrecto(false);
         setMostrarInfo(true);
@@ -230,7 +214,6 @@ export default function JuegoGenerico({
           useNativeDriver: true,
         }).start();
 
-        // Sonido del animal después de la celebración
         setTimeout(() => {
           if (nivel?.item?.datoAudio) {
             try {
@@ -445,8 +428,6 @@ export default function JuegoGenerico({
     }
   };
 
-  // ─── PANTALLA FINAL ──────────────────────────────────────────
-
   if (finalizado) {
     const mensaje = obtenerMensajeMotivador(puntos, totalNiveles);
     const esPerfecto = puntos === totalNiveles;
@@ -509,8 +490,6 @@ export default function JuegoGenerico({
       </LinearGradient>
     );
   }
-
-  // ─── PANTALLA DE JUEGO ──────────────────────────────────────
 
   return (
     <LinearGradient
@@ -607,9 +586,9 @@ export default function JuegoGenerico({
               },
             ]}
           >
-            <View
-              style={[styles.circuloImagen, { backgroundColor: colorFondo }]}
-            >
+            <Text style={styles.preguntaDentro}>{etiquetaTipo()}</Text>
+
+            <View style={[styles.circuloImagen, { backgroundColor: colorFondo }]}>
               <Animated.View
                 style={{
                   transform: [{ scale: escalaImagen }],
@@ -629,19 +608,15 @@ export default function JuegoGenerico({
                 )}
               </Animated.View>
             </View>
-            <View style={styles.pistaContainer}>
-              <Ionicons
-                name="location-outline"
-                size={14}
-                color="rgba(255,255,255,0.8)"
-              />
-              <Text style={styles.textoPista}>{nivel.item.pista}</Text>
+
+            <View style={styles.contenedorPista}>
+              <Ionicons name="search-outline" size={16} color="#1A3C5E" />
+              <Text style={styles.textoPista} numberOfLines={3}>
+                {nivel.item.pista}
+              </Text>
             </View>
           </Animated.View>
 
-          <Text style={styles.pregunta}>{etiquetaTipo()}</Text>
-
-          {/* OPCIONES */}
           {nivel.tipo === "nombre" && (
             <View style={styles.opciones}>
               {nivel.opciones.map((opcion, i) => {
@@ -773,7 +748,6 @@ export default function JuegoGenerico({
             </View>
           )}
 
-          {/* TARJETA "ERA:" (SOLO SI FALLÓ) */}
           {respuesta === "incorrecto" && (
             <View style={styles.tarjetaEra}>
               <Ionicons name="sad-outline" size={32} color="#1A3C5E" />
@@ -800,7 +774,6 @@ export default function JuegoGenerico({
         </ScrollView>
       </SafeAreaView>
 
-      {/* ─── OVERLAY DE CELEBRACIÓN ─── */}
       {respuesta === "correcto" && mostrarDato && (
         <Animated.View
           style={[
@@ -833,7 +806,6 @@ export default function JuegoGenerico({
               </View>
 
               <View style={styles.overlayCuerpo}>
-                {/* "CORRECTO!" en grande */}
                 {mostrarCorrecto && (
                   <Animated.View
                     style={[
@@ -853,7 +825,6 @@ export default function JuegoGenerico({
                   </Animated.View>
                 )}
 
-                {/* Información del animal */}
                 {mostrarInfo && (
                   <Animated.View
                     style={[
@@ -889,7 +860,6 @@ export default function JuegoGenerico({
                   </Animated.View>
                 )}
 
-                {/* Botón continuar (solo cuando se muestra la info) */}
                 {mostrarInfo && (
                   <TouchableOpacity
                     style={styles.botonContinuar}
@@ -912,8 +882,6 @@ export default function JuegoGenerico({
     </LinearGradient>
   );
 }
-
-// ─── ESTILOS ──────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   fondo: { flex: 1 },
@@ -1036,24 +1004,31 @@ const styles = StyleSheet.create({
     backgroundColor: "#204972",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     marginBottom: 10,
     elevation: 5,
   },
+  preguntaDentro: {
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 20,
+    color: "#FFFFFF",
+    textAlign: "center",
+    marginBottom: 8,
+  },
   circuloImagen: {
-    width: width * 0.52,
-    height: width * 0.52,
+    width: width * 0.62,
+    height: width * 0.62,
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.12)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
+    marginBottom: 8,
     overflow: "hidden",
   },
   silueta: {
-    width: width * 0.45,
-    height: width * 0.26,
+    width: width * 0.50,
+    height: width * 0.30,
   },
   nombreGrande: {
     fontFamily: "Baloo2_800ExtraBold",
@@ -1062,26 +1037,26 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 8,
   },
-  pistaContainer: {
+
+  contenedorPista: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 8,
+    gap: 8,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 2,
+    borderColor: "rgba(26,60,94,0.12)",
+    width: "100%",
   },
   textoPista: {
     fontFamily: "Baloo2_700Bold",
-    fontSize: 13,
-    color: "rgba(255,255,255,0.9)",
-    textAlign: "center",
-    flex: 1,
-  },
-
-  pregunta: {
-    fontFamily: "Baloo2_800ExtraBold",
-    fontSize: 18,
+    fontSize: 15,
     color: "#1A3C5E",
-    textAlign: "center",
-    marginBottom: 10,
+    textAlign: "left",
+    lineHeight: 20,
+    flex: 1,
   },
 
   opciones: { gap: 10 },
