@@ -11,6 +11,7 @@ import {
   Dimensions,
   ScrollView,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,13 +22,15 @@ import {
   Baloo2_800ExtraBold,
 } from "@expo-google-fonts/baloo-2";
 import { Ionicons } from "@expo/vector-icons";
-import Confetti from "react-native-confetti";
 import { useAudioPlayer } from "expo-audio";
 
 import { useStars } from "../context/StarContext";
 import CustomButton from "../components/CustomButton";
+import ConfetiAnimado from "../components/ConfetiAnimado";
+import Correcto from "../components/Correcto";
+import Incorrecto from "../components/Incorrecto";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 function mezclar(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -128,28 +131,25 @@ export default function JuegoGenerico({
   const [respuesta, setRespuesta] = useState(null);
   const [opcionElegida, setOpcionElegida] = useState(null);
   const [mostrarColor, setMostrarColor] = useState(false);
-  const [mostrarDato, setMostrarDato] = useState(false);
   const [finalizado, setFinalizado] = useState(false);
   const [puntajeFinal, setPuntajeFinal] = useState(0);
-  const [mostrarOverlay, setMostrarOverlay] = useState(false);
-  const [mostrarCorrecto, setMostrarCorrecto] = useState(false);
-  const [mostrarInfo, setMostrarInfo] = useState(false);
+
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [opcionSeleccionada, setOpcionSeleccionada] = useState(null);
+  const [mostrarSuspenso, setMostrarSuspenso] = useState(false);
+  const [mostrarResultado, setMostrarResultado] = useState(false);
+  const [esCorrecto, setEsCorrecto] = useState(false);
+  const [mostrarSabiasQue, setMostrarSabiasQue] = useState(false);
+  const [mostrarConfeti, setMostrarConfeti] = useState(false);
 
   const escalaImagen = useRef(new Animated.Value(1)).current;
   const opacidadImagen = useRef(new Animated.Value(1)).current;
-  const escalaFeedback = useRef(new Animated.Value(0.92)).current;
-  const shakeAnim = useRef(new Animated.Value(0)).current;
-  const overlayScale = useRef(new Animated.Value(0.7)).current;
-  const overlayOpacity = useRef(new Animated.Value(0)).current;
-  const correctoScale = useRef(new Animated.Value(0.3)).current;
-  const correctoOpacity = useRef(new Animated.Value(0)).current;
-  const infoOpacity = useRef(new Animated.Value(0)).current;
+  const sabiasQueScale = useRef(new Animated.Value(0.5)).current;
+  const sabiasQueOpacity = useRef(new Animated.Value(0)).current;
 
   const flote1 = useFlote(10, 2600, 0);
   const flote2 = useFlote(14, 3200, 300);
   const flote3 = useFlote(8, 2800, 500);
-
-  const confetiRef = useRef(null);
 
   const nivel = niveles[indiceNivel];
   const totalNiveles = niveles.length;
@@ -157,6 +157,8 @@ export default function JuegoGenerico({
   const animalAudio = useAudioPlayer(nivel?.item?.datoAudio || null);
   const aciertoSound = useAudioPlayer(require("../assets/sounds/acierto.mp3"));
   const errorSound = useAudioPlayer(require("../assets/sounds/error.mp3"));
+  const bateriaSound = useAudioPlayer(require("../assets/sounds/bateria.mp3"));
+  const fiuuuSound = useAudioPlayer(require("../assets/sounds/fiuuu.mp3"));
 
   useEffect(() => {
     if (finalizado) {
@@ -165,89 +167,13 @@ export default function JuegoGenerico({
     }
   }, [actualizarEstrellas, categoria, finalizado, puntos]);
 
-  useEffect(() => {
-    if (respuesta === "correcto" && mostrarDato) {
-      setMostrarOverlay(true);
-      setMostrarCorrecto(true);
-      setMostrarInfo(false);
-
-      Animated.parallel([
-        Animated.spring(overlayScale, {
-          toValue: 1,
-          friction: 6,
-          tension: 80,
-          useNativeDriver: true,
-        }),
-        Animated.timing(overlayOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      Animated.parallel([
-        Animated.spring(correctoScale, {
-          toValue: 1,
-          friction: 4,
-          tension: 120,
-          useNativeDriver: true,
-        }),
-        Animated.timing(correctoOpacity, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      try {
-        aciertoSound?.seekTo(0);
-        aciertoSound?.play();
-      } catch (e) {}
-
-      setTimeout(() => {
-        setMostrarCorrecto(false);
-        setMostrarInfo(true);
-
-        Animated.timing(infoOpacity, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }).start();
-
-        setTimeout(() => {
-          if (nivel?.item?.datoAudio) {
-            try {
-              animalAudio?.seekTo(0);
-              animalAudio?.play();
-            } catch (e) {}
-          }
-        }, 400);
-      }, 1800);
-    }
-
-    if (respuesta === "incorrecto") {
-      try {
-        errorSound?.seekTo(0);
-        errorSound?.play();
-      } catch (e) {}
-    }
-  }, [respuesta, mostrarDato, nivel, animalAudio, aciertoSound, errorSound]);
-
   if (!fontsLoaded) return null;
 
   const resetAnimaciones = () => {
     opacidadImagen.setValue(1);
     escalaImagen.setValue(1);
-    escalaFeedback.setValue(0.92);
-    shakeAnim.setValue(0);
-    overlayScale.setValue(0.7);
-    overlayOpacity.setValue(0);
-    correctoScale.setValue(0.3);
-    correctoOpacity.setValue(0);
-    infoOpacity.setValue(0);
-    setMostrarOverlay(false);
-    setMostrarCorrecto(false);
-    setMostrarInfo(false);
+    sabiasQueScale.setValue(0.5);
+    sabiasQueOpacity.setValue(0);
   };
 
   const reiniciar = () => {
@@ -257,46 +183,38 @@ export default function JuegoGenerico({
     setRespuesta(null);
     setOpcionElegida(null);
     setMostrarColor(false);
-    setMostrarDato(false);
     setFinalizado(false);
     setPuntajeFinal(0);
+    setMostrarConfirmacion(false);
+    setMostrarSuspenso(false);
+    setMostrarResultado(false);
+    setEsCorrecto(false);
+    setMostrarSabiasQue(false);
+    setMostrarConfeti(false);
     resetAnimaciones();
   };
 
   const avanzarNivel = () => {
-    Animated.parallel([
-      Animated.timing(overlayOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.spring(overlayScale, {
-        toValue: 0.7,
-        friction: 6,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setMostrarOverlay(false);
-
-      if (indiceNivel + 1 >= totalNiveles) {
-        setFinalizado(true);
-        if (puntos === totalNiveles) {
-          setTimeout(() => {
-            confetiRef.current?.startConfetti();
-          }, 500);
-        }
-        return;
-      }
-      setIndiceNivel((v) => v + 1);
-      setRespuesta(null);
-      setOpcionElegida(null);
-      setMostrarColor(false);
-      setMostrarDato(false);
-      resetAnimaciones();
-    });
+    if (indiceNivel + 1 >= totalNiveles) {
+      setFinalizado(true);
+      return;
+    }
+    setIndiceNivel((v) => v + 1);
+    setRespuesta(null);
+    setOpcionElegida(null);
+    setMostrarColor(false);
+    setMostrarConfirmacion(false);
+    setMostrarSuspenso(false);
+    setMostrarResultado(false);
+    setEsCorrecto(false);
+    setMostrarSabiasQue(false);
+    setMostrarConfeti(false);
+    resetAnimaciones();
   };
 
   const animarCambio = (callback) => {
+    callback();
+
     Animated.parallel([
       Animated.timing(opacidadImagen, {
         toValue: 0,
@@ -309,7 +227,6 @@ export default function JuegoGenerico({
         useNativeDriver: true,
       }),
     ]).start(() => {
-      callback();
       Animated.parallel([
         Animated.timing(opacidadImagen, {
           toValue: 1,
@@ -321,64 +238,109 @@ export default function JuegoGenerico({
           friction: 4,
           useNativeDriver: true,
         }),
-        Animated.spring(escalaFeedback, {
-          toValue: 1,
-          friction: 5,
-          useNativeDriver: true,
-        }),
       ]).start();
     });
   };
 
-  const animarTemblor = () => {
-    shakeAnim.setValue(0);
-    Animated.sequence([
-      Animated.timing(shakeAnim, {
+  const animarSabiasQue = () => {
+    sabiasQueScale.setValue(0.5);
+    sabiasQueOpacity.setValue(0);
+    Animated.parallel([
+      Animated.spring(sabiasQueScale, {
         toValue: 1,
-        duration: 50,
+        friction: 6,
+        tension: 70,
         useNativeDriver: true,
       }),
-      Animated.timing(shakeAnim, {
-        toValue: -1,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
+      Animated.timing(sabiasQueOpacity, {
         toValue: 1,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: -1,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: 0,
-        duration: 50,
+        duration: 400,
         useNativeDriver: true,
       }),
     ]).start();
   };
 
-  const elegir = (opcion) => {
+  const handleSeleccionarOpcion = (opcion) => {
     if (respuesta) return;
-    setOpcionElegida(opcion);
-    const correcto = opcion === nivel.respuestaCorrecta;
-    setRespuesta(correcto ? "correcto" : "incorrecto");
-    if (correcto) {
-      setPuntos((v) => v + 1);
-      animarCambio(() => {
-        setMostrarColor(true);
-        setMostrarDato(true);
-      });
-    } else {
-      animarTemblor();
-      animarCambio(() => {
-        setMostrarColor(true);
-        setMostrarDato(false);
-      });
+    setOpcionSeleccionada(opcion);
+    setMostrarConfirmacion(true);
+  };
+
+  const handleConfirmarRespuesta = () => {
+    setMostrarConfirmacion(false);
+    setMostrarSuspenso(true);
+
+    try {
+      bateriaSound?.seekTo(0);
+      bateriaSound?.play();
+    } catch (e) {}
+
+    setTimeout(() => {
+      setMostrarSuspenso(false);
+
+      const correcto = opcionSeleccionada === nivel.respuestaCorrecta;
+      setEsCorrecto(correcto);
+      setRespuesta(correcto ? "correcto" : "incorrecto");
+
+      if (correcto) {
+        setPuntos((v) => v + 1);
+        animarCambio(() => {
+          setMostrarColor(true);
+        });
+
+        try {
+          aciertoSound?.seekTo(0);
+          aciertoSound?.play();
+        } catch (e) {}
+
+        setMostrarConfeti(true);
+        setMostrarResultado(true);
+
+        setTimeout(() => {
+          setMostrarConfeti(false);
+        }, 4000);
+      } else {
+        animarCambio(() => {
+          setMostrarColor(true);
+        });
+
+        try {
+          errorSound?.seekTo(0);
+          errorSound?.play();
+        } catch (e) {}
+
+        setMostrarResultado(true);
+      }
+    }, 3000);
+  };
+
+  const handleRechazarRespuesta = () => {
+    setMostrarConfirmacion(false);
+    setOpcionSeleccionada(null);
+  };
+
+  const handleCorrectoCompletado = () => {
+    setMostrarResultado(false);
+    setMostrarSabiasQue(true);
+    try {
+      fiuuuSound?.seekTo(0);
+      fiuuuSound?.play();
+    } catch (e) {}
+    animarSabiasQue();
+
+    if (nivel?.item?.datoAudio) {
+      setTimeout(() => {
+        try {
+          animalAudio?.seekTo(0);
+          animalAudio?.play();
+        } catch (e) {}
+      }, 500);
     }
+  };
+
+  const handleIncorrectoCompletado = () => {
+    setMostrarResultado(false);
+    avanzarNivel();
   };
 
   const etiquetaTipo = () => {
@@ -389,7 +351,7 @@ export default function JuegoGenerico({
       return `¿Es ${articulo} ${nivel.nombreMostrado}?`;
     }
     if (nivel.tipo === "silueta") {
-      return `¿Cuál es la silueta de ${nivel.item.articulo} ${nivel.item.nombre}?`;
+      return `Encuentra la silueta`;
     }
   };
 
@@ -442,7 +404,7 @@ export default function JuegoGenerico({
         <StatusBar style="light" />
         <SafeAreaView style={styles.contenidoFin}>
           <View style={styles.cuerpoFin}>
-            <Confetti ref={confetiRef} />
+            <ConfetiAnimado visible={mostrarConfeti} />
 
             <Ionicons
               name={esPerfecto ? "trophy" : mensaje.icono}
@@ -522,6 +484,8 @@ export default function JuegoGenerico({
         ]}
       />
 
+      <ConfetiAnimado visible={mostrarConfeti} />
+
       <SafeAreaView style={styles.contenido}>
         <View style={styles.headerCoral}>
           <View style={styles.headerFila}>
@@ -535,8 +499,9 @@ export default function JuegoGenerico({
             <View style={styles.headerCentro}>
               <Text style={styles.headerTitulo}>{titulo}</Text>
             </View>
+
             <View style={styles.badgeEstrella}>
-              <Ionicons name="star" size={16} color="#1A3C5E" />
+              <Ionicons name="star" size={24} color="#FFD166" />
               <Text style={styles.badgeNum}>{puntos}</Text>
             </View>
           </View>
@@ -562,8 +527,8 @@ export default function JuegoGenerico({
               ]}
             />
           </View>
-          <Text style={styles.textoProgreso}>
-            Pregunta {indiceNivel + 1}/{totalNiveles}
+          <Text style={styles.textoProgresoCentrado}>
+            Pregunta {indiceNivel + 1} de {totalNiveles}
           </Text>
         </View>
 
@@ -571,68 +536,96 @@ export default function JuegoGenerico({
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scroll}
         >
-          <Animated.View
-            style={[
-              styles.tarjetaSilueta,
-              {
-                transform: [
-                  {
-                    translateX: shakeAnim.interpolate({
-                      inputRange: [-1, 1],
-                      outputRange: [-8, 8],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            <Text style={styles.preguntaDentro}>{etiquetaTipo()}</Text>
+          {/* ─── TARJETA PARA TIPO NOMBRE Y SINO (NORMAL) ─── */}
+          {(nivel.tipo === "nombre" || nivel.tipo === "sino") && (
+            <Animated.View style={styles.tarjetaSilueta}>
+              <Text style={styles.preguntaDentro}>{etiquetaTipo()}</Text>
 
-            <View style={[styles.circuloImagen, { backgroundColor: colorFondo }]}>
-              <Animated.View
-                style={{
-                  transform: [{ scale: escalaImagen }],
-                  opacity: opacidadImagen,
-                }}
+              <View
+                style={[styles.circuloImagen, { backgroundColor: colorFondo }]}
               >
-                {nivel.tipo === "silueta" ? (
-                  <Text style={styles.nombreGrande}>{nivel.item.nombre}</Text>
-                ) : (
-                  <Image
-                    source={
-                      mostrarColor ? nivel.item.color : nivel.item.silueta
-                    }
-                    style={styles.silueta}
-                    resizeMode="contain"
-                  />
-                )}
-              </Animated.View>
-            </View>
+                <Animated.View
+                  style={{
+                    transform: [{ scale: escalaImagen }],
+                    opacity: opacidadImagen,
+                  }}
+                >
+                  {nivel.tipo === "silueta" ? (
+                    <Text style={styles.nombreGrande}>{nivel.item.nombre}</Text>
+                  ) : (
+                    <Image
+                      source={
+                        mostrarColor ? nivel.item.color : nivel.item.silueta
+                      }
+                      style={styles.silueta}
+                      resizeMode="contain"
+                    />
+                  )}
+                </Animated.View>
+              </View>
 
-            <View style={styles.contenedorPista}>
-              <Ionicons name="search-outline" size={16} color="#1A3C5E" />
-              <Text style={styles.textoPista} numberOfLines={3}>
-                {nivel.item.pista}
+              <View style={styles.contenedorPista}>
+                <Ionicons name="bulb-outline" size={18} color="#FFD166" />
+                <Text style={styles.textoPistaFijo} numberOfLines={2}>
+                  {nivel.item.pista}
+                </Text>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* ─── TARJETA PARA TIPO SILUETA (REDUCIDA) ─── */}
+          {nivel.tipo === "silueta" && (
+            <Animated.View style={[styles.tarjetaSilueta, styles.tarjetaSiluetaOpcionSilueta]}>
+              <Text style={[styles.preguntaDentro, styles.preguntaDentroSilueta]}>
+                {etiquetaTipo()}
               </Text>
-            </View>
-          </Animated.View>
+
+              <View
+                style={[styles.circuloImagen, styles.circuloImagenSilueta, { backgroundColor: colorFondo }]}
+              >
+                <Animated.View
+                  style={{
+                    transform: [{ scale: escalaImagen }],
+                    opacity: opacidadImagen,
+                  }}
+                >
+                  <Text style={[styles.nombreGrande, styles.nombreGrandeSilueta]}>
+                    {nivel.item.nombre}
+                  </Text>
+                </Animated.View>
+              </View>
+
+              <View style={[styles.contenedorPista, styles.contenedorPistaSilueta]}>
+                <Ionicons name="bulb-outline" size={16} color="#FFD166" />
+                <Text style={[styles.textoPistaFijo, styles.textoPistaFijoSilueta]} numberOfLines={2}>
+                  {nivel.item.pista}
+                </Text>
+              </View>
+            </Animated.View>
+          )}
 
           {nivel.tipo === "nombre" && (
             <View style={styles.opciones}>
               {nivel.opciones.map((opcion, i) => {
                 const seleccionada = opcionElegida === opcion;
-                const colorBase =
-                  !respuesta || !seleccionada
-                    ? "#FFFFFF"
-                    : respuesta === "correcto"
-                      ? "#88CC88"
-                      : "#F47C7C";
-                const bordeBase =
-                  !respuesta || !seleccionada
-                    ? "rgba(26,60,94,0.2)"
-                    : respuesta === "correcto"
-                      ? "#4AAE4A"
-                      : "#D45A5A";
+                const esCorrecta = opcion === nivel.respuestaCorrecta;
+
+                let colorBase = "#FFFFFF";
+                let bordeBase = "rgba(26,60,94,0.2)";
+
+                if (respuesta) {
+                  if (esCorrecta) {
+                    colorBase = "#88CC88";
+                    bordeBase = "#4AAE4A";
+                  } else if (seleccionada) {
+                    colorBase = "#F47C7C";
+                    bordeBase = "#D45A5A";
+                  }
+                } else if (seleccionada) {
+                  colorBase = "#FFF8E1";
+                  bordeBase = "#FFD166";
+                }
+
                 return (
                   <TouchableOpacity
                     key={opcion}
@@ -640,9 +633,12 @@ export default function JuegoGenerico({
                       styles.botonOpcion,
                       { backgroundColor: colorBase, borderColor: bordeBase },
                     ]}
-                    onPress={() => elegir(opcion)}
+                    onPress={() => {
+                      setOpcionElegida(opcion);
+                      handleSeleccionarOpcion(opcion);
+                    }}
                     activeOpacity={0.84}
-                    disabled={!!respuesta}
+                    disabled={!!respuesta || mostrarSuspenso}
                   >
                     <Text style={styles.numeroOpcion}>{i + 1}.</Text>
                     <Text style={styles.textoOpcion}>{opcion}</Text>
@@ -656,49 +652,49 @@ export default function JuegoGenerico({
             <View style={styles.opcionesSiNo}>
               {["Sí", "No"].map((opcion) => {
                 const seleccionada = opcionElegida === opcion;
-                const esCorrecto = opcion === nivel.respuestaCorrecta;
+                const esCorrecta = opcion === nivel.respuestaCorrecta;
 
-                let colorBase = "#FFFFFF";
-                let bordeBase = "rgba(26,60,94,0.2)";
-                let textColor = "#1A3C5E";
+                const esSi = opcion === "Sí";
+                let bgColor = esSi ? "#4CAF7A" : "#F47C7C";
+                let bordeBase = esSi ? "#388E3C" : "#D45A5A";
+                let iconColor = "#FFFFFF";
 
                 if (respuesta) {
-                  if (seleccionada && esCorrecto) {
-                    colorBase = "#88CC88";
-                    bordeBase = "#4AAE4A";
-                    textColor = "#1A3C5E";
-                  } else if (seleccionada && !esCorrecto) {
-                    colorBase = "#F47C7C";
+                  if (esCorrecta) {
+                    bgColor = "#4CAF7A";
+                    bordeBase = "#4CAF7A";
+                    iconColor = "#FFFFFF";
+                  } else {
+                    bgColor = "#F47C7C";
                     bordeBase = "#D45A5A";
-                    textColor = "#FFFFFF";
-                  } else if (!seleccionada && esCorrecto) {
-                    colorBase = "#88CC88";
-                    bordeBase = "#4AAE4A";
-                    textColor = "#1A3C5E";
+                    iconColor = "#FFFFFF";
                   }
+                } else if (seleccionada) {
+                  bgColor = "#FFF8E1";
+                  bordeBase = "#FFD166";
+                  iconColor = "#1A3C5E";
                 }
+
+                const iconName =
+                  opcion === "Sí" ? "checkmark-circle" : "close-circle";
 
                 return (
                   <TouchableOpacity
                     key={opcion}
                     style={[
                       styles.botonSiNo,
-                      { backgroundColor: colorBase, borderColor: bordeBase },
+                      { backgroundColor: bgColor, borderColor: bordeBase },
                     ]}
-                    onPress={() => elegir(opcion)}
+                    onPress={() => {
+                      setOpcionElegida(opcion);
+                      handleSeleccionarOpcion(opcion);
+                    }}
                     activeOpacity={0.84}
-                    disabled={!!respuesta}
+                    disabled={!!respuesta || mostrarSuspenso}
                   >
-                    <Ionicons
-                      name={
-                        opcion === "Sí" ? "checkmark-circle" : "close-circle"
-                      }
-                      size={28}
-                      color={textColor}
-                    />
-                    <Text style={[styles.textoOpcion, { color: textColor }]}>
-                      {opcion}
-                    </Text>
+                    <View style={styles.iconoSiNo}>
+                      <Ionicons name={iconName} size={52} color={iconColor} />
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -707,175 +703,198 @@ export default function JuegoGenerico({
 
           {nivel.tipo === "silueta" && (
             <View style={styles.opcionesSilueta}>
-              {nivel.opcionesItems.map((item) => {
-                const seleccionada = opcionElegida === item.id;
-                const esCorrecta = item.id === nivel.respuestaCorrecta;
+              {/* Fila superior: opción 1 y opción 3 */}
+              <View style={styles.filaSiluetaSuperior}>
+                {[nivel.opcionesItems[0], nivel.opcionesItems[2]].map((item) => {
+                  const seleccionada = opcionElegida === item.id;
+                  const esCorrecta = item.id === nivel.respuestaCorrecta;
 
-                let colorBase = "#FFFFFF";
-                let bordeBase = "rgba(26,60,94,0.2)";
+                  let colorBase = "#FFFFFF";
+                  let bordeBase = "rgba(26,60,94,0.2)";
 
-                if (respuesta) {
-                  if (esCorrecta) {
-                    colorBase = "#88CC88";
-                    bordeBase = "#4AAE4A";
+                  if (respuesta) {
+                    if (esCorrecta) {
+                      colorBase = "#88CC88";
+                      bordeBase = "#4AAE4A";
+                    } else if (seleccionada) {
+                      colorBase = "#F47C7C";
+                      bordeBase = "#D45A5A";
+                    }
                   } else if (seleccionada) {
-                    colorBase = "#F47C7C";
-                    bordeBase = "#D45A5A";
+                    colorBase = "#FFF8E1";
+                    bordeBase = "#FFD166";
                   }
-                }
 
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[
-                      styles.tarjetaSiluetaOpcion,
-                      { backgroundColor: colorBase, borderColor: bordeBase },
-                    ]}
-                    onPress={() => elegir(item.id)}
-                    activeOpacity={0.84}
-                    disabled={!!respuesta}
-                  >
-                    <Image
-                      source={
-                        mostrarColor && esCorrecta ? item.color : item.silueta
-                      }
-                      style={styles.siluetaOpcion}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.tarjetaSiluetaOpcion,
+                        styles.tarjetaSiluetaSuperior,
+                        { backgroundColor: colorBase, borderColor: bordeBase },
+                      ]}
+                      onPress={() => {
+                        setOpcionElegida(item.id);
+                        handleSeleccionarOpcion(item.id);
+                      }}
+                      activeOpacity={0.84}
+                      disabled={!!respuesta || mostrarSuspenso}
+                    >
+                      <Image
+                        source={mostrarColor && esCorrecta ? item.color : item.silueta}
+                        style={styles.siluetaOpcionGrande}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
-          {respuesta === "incorrecto" && (
-            <View style={styles.tarjetaEra}>
-              <Ionicons name="sad-outline" size={32} color="#1A3C5E" />
-              <Text style={styles.textoEra}>
-                Era:{" "}
-                <Text style={styles.textoEraDestacado}>
-                  {nivel.item.nombre}
-                </Text>
-              </Text>
-              <TouchableOpacity
-                style={styles.botonContinuarEra}
-                onPress={avanzarNivel}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.textoBotonContinuarEra}>
-                  {indiceNivel + 1 >= totalNiveles
-                    ? "Ver mis resultados"
-                    : "Siguiente"}
-                </Text>
-                <Ionicons name="arrow-forward" size={18} color="#1A3C5E" />
-              </TouchableOpacity>
+              {/* Fila inferior: opción 2 (centrada) */}
+              <View style={styles.filaSiluetaInferior}>
+                {[nivel.opcionesItems[1]].map((item) => {
+                  const seleccionada = opcionElegida === item.id;
+                  const esCorrecta = item.id === nivel.respuestaCorrecta;
+
+                  let colorBase = "#FFFFFF";
+                  let bordeBase = "rgba(26,60,94,0.2)";
+
+                  if (respuesta) {
+                    if (esCorrecta) {
+                      colorBase = "#88CC88";
+                      bordeBase = "#4AAE4A";
+                    } else if (seleccionada) {
+                      colorBase = "#F47C7C";
+                      bordeBase = "#D45A5A";
+                    }
+                  } else if (seleccionada) {
+                    colorBase = "#FFF8E1";
+                    bordeBase = "#FFD166";
+                  }
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.tarjetaSiluetaOpcion,
+                        styles.tarjetaSiluetaInferior,
+                        { backgroundColor: colorBase, borderColor: bordeBase },
+                      ]}
+                      onPress={() => {
+                        setOpcionElegida(item.id);
+                        handleSeleccionarOpcion(item.id);
+                      }}
+                      activeOpacity={0.84}
+                      disabled={!!respuesta || mostrarSuspenso}
+                    >
+                      <Image
+                        source={mostrarColor && esCorrecta ? item.color : item.silueta}
+                        style={styles.siluetaOpcionGrande}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
           )}
         </ScrollView>
       </SafeAreaView>
 
-      {respuesta === "correcto" && mostrarDato && (
+      <Modal
+        transparent
+        visible={mostrarConfirmacion}
+        animationType="fade"
+        onRequestClose={handleRechazarRespuesta}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Image
+              source={require("../assets/images/buho_saludando.png")}
+              style={styles.buhoModal}
+              resizeMode="contain"
+            />
+            <Text style={styles.modalTitulo}>
+              ¿Estás seguro de tu respuesta?
+            </Text>
+            <View style={styles.modalBotones}>
+              <TouchableOpacity
+                style={[styles.modalBoton, styles.modalBotonSi]}
+                onPress={handleConfirmarRespuesta}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modalBotonTexto}>Sí</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalBoton, styles.modalBotonNo]}
+                onPress={handleRechazarRespuesta}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modalBotonTexto}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Correcto
+        visible={mostrarResultado && esCorrecto}
+        onComplete={handleCorrectoCompletado}
+      />
+
+      <Incorrecto
+        visible={mostrarResultado && !esCorrecto}
+        nombre={nivel?.item?.nombre || "Animal"}
+        tipo={nivel?.tipo}
+        onComplete={handleIncorrectoCompletado}
+      />
+
+      {mostrarSabiasQue && (
         <Animated.View
           style={[
-            styles.overlayCelebracion,
+            styles.overlaySabiasQue,
             {
-              opacity: overlayOpacity,
-              transform: [{ scale: overlayScale }],
+              opacity: sabiasQueOpacity,
+              transform: [{ scale: sabiasQueScale }],
             },
           ]}
         >
           <LinearGradient
-            colors={["rgba(91,174,91,0.95)", "rgba(46,125,50,0.95)"]}
+            colors={["rgba(26,54,93,0.85)", "rgba(26,54,93,0.90)"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.overlayGradient}
+            style={styles.overlaySabiasQueFondo}
           >
-            <SafeAreaView style={styles.overlayContenido}>
-              <View style={styles.overlayFila}>
-                <View style={styles.overlayBadgeCategoria}>
-                  <Ionicons name="paw" size={14} color="#FFFFFF" />
-                  <Text style={styles.overlayBadgeCategoriaTexto}>
-                    {titulo}
-                  </Text>
-                </View>
-                <View style={styles.overlayBadgeProgreso}>
-                  <Text style={styles.overlayBadgeProgresoTexto}>
-                    {indiceNivel + 1}/{totalNiveles}
-                  </Text>
-                </View>
+            <View style={styles.tarjetaSabiasQue}>
+              <View style={styles.headerSabiasQue}>
+                <Ionicons name="bulb-outline" size={24} color="#6C3FCF" />
+                <Text style={styles.tituloSabiasQue}>¿Sabías que...?</Text>
               </View>
 
-              <View style={styles.overlayCuerpo}>
-                {mostrarCorrecto && (
-                  <Animated.View
-                    style={[
-                      styles.correctoContainer,
-                      {
-                        opacity: correctoOpacity,
-                        transform: [{ scale: correctoScale }],
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={70}
-                      color="#FFD166"
-                    />
-                    <Text style={styles.correctoTexto}>¡Correcto!</Text>
-                  </Animated.View>
-                )}
-
-                {mostrarInfo && (
-                  <Animated.View
-                    style={[
-                      styles.tarjetaResultado,
-                      {
-                        opacity: infoOpacity,
-                      },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.circuloResultado,
-                        { backgroundColor: colorFondo },
-                      ]}
-                    >
-                      <Image
-                        source={nivel.item.color}
-                        style={styles.imagenResultado}
-                        resizeMode="contain"
-                      />
-                    </View>
-                    <Text style={styles.nombreResultado}>
-                      {nivel.item.nombre}
-                    </Text>
-
-                    <View style={styles.lineaDivisoria} />
-
-                    <View style={styles.badgeDato}>
-                      <Ionicons name="bulb-outline" size={14} color="#FFFFFF" />
-                      <Text style={styles.badgeDatoTexto}>¿Sabías que...?</Text>
-                    </View>
-                    <Text style={styles.textoDato}>{nivel.item.dato}</Text>
-                  </Animated.View>
-                )}
-
-                {mostrarInfo && (
-                  <TouchableOpacity
-                    style={styles.botonContinuar}
-                    onPress={avanzarNivel}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={styles.textoBotonContinuar}>
-                      {indiceNivel + 1 >= totalNiveles
-                        ? "Ver mis resultados"
-                        : "Siguiente silueta"}
-                    </Text>
-                    <Ionicons name="arrow-forward" size={22} color="#1A3C5E" />
-                  </TouchableOpacity>
-                )}
+              <View style={styles.circuloSabiasQue}>
+                <Image
+                  source={nivel.item.color}
+                  style={styles.imagenSabiasQue}
+                  resizeMode="contain"
+                />
               </View>
-            </SafeAreaView>
+
+              <Text style={styles.nombreSabiasQue}>{nivel.item.nombre}</Text>
+              <Text style={styles.textoSabiasQue}>{nivel.item.dato}</Text>
+
+              <TouchableOpacity
+                style={styles.botonContinuar}
+                onPress={avanzarNivel}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.textoBotonContinuar}>
+                  {indiceNivel + 1 >= totalNiveles
+                    ? "Ver mis resultados"
+                    : "Siguiente"}
+                </Text>
+                <Ionicons name="arrow-forward" size={22} color="#1A3C5E" />
+              </TouchableOpacity>
+            </View>
           </LinearGradient>
         </Animated.View>
       )}
@@ -933,20 +952,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#FFFFFF",
   },
+
   badgeEstrella: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFC400",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 24,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     gap: 4,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.2)",
   },
   badgeNum: {
     fontFamily: "Baloo2_800ExtraBold",
-    fontSize: 14,
-    color: "#1A3C5E",
+    fontSize: 18,
+    color: "#FFFFFF",
+    lineHeight: 22,
+    marginTop: 1,
   },
+
   badgeTipo: {
     flexDirection: "row",
     alignItems: "center",
@@ -977,12 +1002,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFC400",
     borderRadius: 999,
   },
-  textoProgreso: {
-    fontFamily: "Baloo2_700Bold",
-    fontSize: 11,
-    color: "rgba(255,255,255,0.9)",
-    textAlign: "left",
-    paddingHorizontal: 16,
+  textoProgresoCentrado: {
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 18,
+    color: "#FFFFFF",
+    textAlign: "center",
     marginTop: 4,
   },
 
@@ -997,9 +1021,10 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.4)",
   },
 
+  // ─── TARJETA NORMAL (NOMBRE Y SINO) ───
   tarjetaSilueta: {
     borderRadius: 28,
-    borderWidth: 3,
+    borderWidth: 0.5,
     borderColor: "#1A3C5E",
     backgroundColor: "#204972",
     alignItems: "center",
@@ -1017,8 +1042,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   circuloImagen: {
-    width: width * 0.62,
-    height: width * 0.62,
+    width: width * 0.68,
+    height: width * 0.68,
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.12)",
     alignItems: "center",
@@ -1027,8 +1052,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   silueta: {
-    width: width * 0.50,
-    height: width * 0.30,
+    width: width * 0.55,
+    height: width * 0.33,
   },
   nombreGrande: {
     fontFamily: "Baloo2_800ExtraBold",
@@ -1037,28 +1062,55 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 8,
   },
-
   contenedorPista: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    backgroundColor: "rgba(255,255,255,0.92)",
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderWidth: 2,
-    borderColor: "rgba(26,60,94,0.12)",
+    marginTop: 8,
     width: "100%",
+    paddingHorizontal: 4,
+    gap: 8,
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
-  textoPista: {
+  textoPistaFijo: {
     fontFamily: "Baloo2_700Bold",
-    fontSize: 15,
-    color: "#1A3C5E",
-    textAlign: "left",
-    lineHeight: 20,
+    fontSize: 14,
+    color: "#FFFFFF",
     flex: 1,
+    lineHeight: 20,
+    flexWrap: "wrap",
   },
 
+  // ─── TARJETA REDUCIDA SOLO PARA SILUETA ───
+  tarjetaSiluetaOpcionSilueta: {
+    paddingVertical: 6,
+    marginBottom: 6,
+  },
+  preguntaDentroSilueta: {
+    fontSize: 25,
+    marginBottom: 4,
+  },
+  circuloImagenSilueta: {
+    width: width * 0.42,
+    height: width * 0.42,
+    marginBottom: 4,
+  },
+  nombreGrandeSilueta: {
+    fontSize: 35,
+  },
+  contenedorPistaSilueta: {
+    marginTop: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  textoPistaFijoSilueta: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  // ─── OPCIONES ───
   opciones: { gap: 10 },
   botonOpcion: {
     flexDirection: "row",
@@ -1083,206 +1135,197 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  opcionesSiNo: { flexDirection: "row", gap: 12 },
+  opcionesSiNo: {
+    flexDirection: "row",
+    gap: 20,
+    marginTop: 12,
+    justifyContent: "center",
+  },
   botonSiNo: {
     flex: 1,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 18,
-    borderRadius: 22,
-    borderWidth: 3,
-    gap: 8,
-    backgroundColor: "#FFFFFF",
-  },
-
-  opcionesSilueta: { flexDirection: "row", gap: 10 },
-  tarjetaSiluetaOpcion: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
-    borderWidth: 3,
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF",
-  },
-  siluetaOpcion: {
-    width: (width - 80) / 3,
-    height: (width - 80) / 3,
-  },
-
-  tarjetaEra: {
-    backgroundColor: "rgba(244,124,124,0.95)",
-    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    borderRadius: 28,
     borderWidth: 2,
-    borderColor: "#D45A5A",
-    padding: 16,
-    marginTop: 14,
+    backgroundColor: "#FFFFFF",
+    maxWidth: 160,
+    aspectRatio: 1,
+    elevation: 6,
+    shadowColor: "#1A365D",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 0,
+  },
+  iconoSiNo: {
     alignItems: "center",
-    gap: 8,
+    justifyContent: "center",
   },
-  textoEra: {
-    fontFamily: "Baloo2_700Bold",
-    fontSize: 18,
-    color: "#1A3C5E",
+
+  opcionesSilueta: {
+    alignItems: "center",
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  filaSiluetaSuperior: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: 12,
+  },
+  filaSiluetaInferior: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+    marginTop: 12,
+  },
+  tarjetaSiluetaOpcion: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 24,
+    borderWidth: 1,
+    paddingVertical: 16,
+    backgroundColor: "#FFFFFF",
+    elevation: 4,
+    shadowColor: "#1A365D",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 0,
+  },
+  tarjetaSiluetaSuperior: {
+    width: (width - 60) / 2,
+    aspectRatio: 1,
+  },
+  tarjetaSiluetaInferior: {
+    width: (width - 60) / 2,
+    aspectRatio: 1,
+  },
+  siluetaOpcionGrande: {
+    width: "80%",
+    height: "80%",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(26,54,93,0.7)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 30,
+  },
+  modalContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 32,
+    padding: 24,
+    alignItems: "center",
+    width: "100%",
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+  },
+  buhoModal: {
+    width: 120,
+    height: 120,
+    marginBottom: 12,
+  },
+  modalTitulo: {
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 22,
+    color: "#1A365D",
     textAlign: "center",
+    marginBottom: 20,
   },
-  textoEraDestacado: {
+  modalBotones: {
+    flexDirection: "row",
+    gap: 16,
+    width: "100%",
+  },
+  modalBoton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 50,
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: "#1A3C5E",
+  },
+  modalBotonSi: {
+    backgroundColor: "#4CAF7A",
+  },
+  modalBotonNo: {
+    backgroundColor: "#F47C7C",
+  },
+  modalBotonTexto: {
     fontFamily: "Baloo2_800ExtraBold",
     fontSize: 20,
-    color: "#D45A5A",
-  },
-  botonContinuarEra: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFC400",
-    width: "100%",
-    paddingVertical: 12,
-    borderRadius: 40,
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#1A3C5E",
-    gap: 8,
-  },
-  textoBotonContinuarEra: {
-    fontFamily: "Baloo2_800ExtraBold",
-    fontSize: 15,
-    color: "#1A3C5E",
+    color: "#FFFFFF",
   },
 
-  overlayCelebracion: {
+  overlaySabiasQue: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 999,
+    zIndex: 200,
   },
-  overlayGradient: {
+  overlaySabiasQueFondo: {
     flex: 1,
-  },
-  overlayContenido: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 16,
-  },
-  overlayFila: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingTop: 8,
-  },
-  overlayCuerpo: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-    paddingVertical: 8,
-  },
-  overlayBadgeCategoria: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.25)",
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    gap: 6,
-  },
-  overlayBadgeCategoriaTexto: {
-    fontFamily: "Baloo2_700Bold",
-    fontSize: 13,
-    color: "#FFFFFF",
-  },
-  overlayBadgeProgreso: {
-    backgroundColor: "rgba(255,255,255,0.25)",
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-  },
-  overlayBadgeProgresoTexto: {
-    fontFamily: "Baloo2_700Bold",
-    fontSize: 13,
-    color: "#FFFFFF",
-  },
-
-  correctoContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
+    paddingHorizontal: 24,
   },
-  correctoTexto: {
-    fontFamily: "Baloo2_800ExtraBold",
-    fontSize: 50,
-    color: "#FFFFFF",
-    textAlign: "center",
-    textShadowColor: "rgba(0,0,0,0.2)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 6,
-  },
-
-  tarjetaResultado: {
-    width: "100%",
+  tarjetaSabiasQue: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
+    borderRadius: 32,
+    padding: 24,
     alignItems: "center",
-    marginBottom: 10,
-    elevation: 8,
-    shadowColor: "#1A3C5E",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    maxHeight: "72%",
+    width: "100%",
+    elevation: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
   },
-  circuloResultado: {
-    width: width * 0.38,
-    height: width * 0.38,
+  headerSabiasQue: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+  },
+  tituloSabiasQue: {
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: 24,
+    color: "#6C3FCF",
+  },
+  circuloSabiasQue: {
+    width: width * 0.45,
+    height: width * 0.45,
     borderRadius: 24,
     backgroundColor: "#1A3C5E",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  imagenResultado: {
-    width: width * 0.38,
-    height: width * 0.38,
+  imagenSabiasQue: {
+    width: width * 0.4,
+    height: width * 0.4,
   },
-  nombreResultado: {
+  nombreSabiasQue: {
     fontFamily: "Baloo2_800ExtraBold",
-    fontSize: 20,
+    fontSize: 26,
     color: "#1A3C5E",
-    marginBottom: 4,
-  },
-  lineaDivisoria: {
-    width: "70%",
-    height: 1,
-    backgroundColor: "rgba(26,60,94,0.1)",
     marginBottom: 6,
   },
-  badgeDato: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#6C3FCF",
-    borderRadius: 999,
-    paddingVertical: 3,
-    paddingHorizontal: 12,
-    marginBottom: 6,
-    gap: 4,
-  },
-  badgeDatoTexto: {
-    fontFamily: "Baloo2_800ExtraBold",
-    fontSize: 12,
-    color: "#FFFFFF",
-  },
-  textoDato: {
+  textoSabiasQue: {
     fontFamily: "Baloo2_700Bold",
-    fontSize: 14,
+    fontSize: 16,
     color: "#1A3C5E",
     textAlign: "justify",
-    lineHeight: 20,
-    paddingHorizontal: 2,
+    lineHeight: 26,
+    paddingHorizontal: 4,
+    marginBottom: 16,
   },
 
   botonContinuar: {
