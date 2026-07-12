@@ -1,3 +1,5 @@
+// screens/MenuScreen.js
+
 import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -16,6 +18,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
 
 import GameCard from '../components/GameCard';
 import { useStars } from '../context/StarContext';
@@ -105,7 +108,6 @@ function useFlote(distancia, duracion, delay = 0) {
   return valor.interpolate({ inputRange: [0, 1], outputRange: [0, -distancia] });
 }
 
-// Animación de pulso para el botón "¿Cómo se juega?"
 function usePulso() {
   const valor = useRef(new Animated.Value(1)).current;
   useEffect(() => {
@@ -270,10 +272,20 @@ export default function MenuScreen({ navigation }) {
               },
             ]}
           >
-            <Text style={styles.tituloSimple}>¡A jugar y aprender!</Text>
-            <Text style={styles.textoSimple}>
-              Elige una categoría y descubre algo nuevo.
-            </Text>
+            <View style={styles.filaIzquierda}>
+              <Text style={styles.tituloSimple}>¡A jugar y aprender!</Text>
+              <Text style={styles.textoSimple}>
+                Elige una categoría y descubre algo nuevo.
+              </Text>
+            </View>
+            <View style={styles.filaDerecha}>
+              <LottieView
+                source={require('../assets/animations/buho.json')}
+                autoPlay
+                loop
+                style={styles.munecoSimple}
+              />
+            </View>
           </Animated.View>
 
           <Animated.View
@@ -284,7 +296,6 @@ export default function MenuScreen({ navigation }) {
             <View style={styles.filaSeccion}>
               <Text style={styles.tituloSeccion}>Categorías</Text>
               
-              {/* Botón "¿Cómo se juega?" con animación de pulso */}
               <Animated.View style={{ transform: [{ scale: pulsoBoton }] }}>
                 <TouchableOpacity
                   style={styles.botonComoJugar}
@@ -292,13 +303,13 @@ export default function MenuScreen({ navigation }) {
                   activeOpacity={0.85}
                 >
                   <LinearGradient
-                    colors={['#FFD166', '#FF9F43']}
+                    colors={['#6C3FCF', '#4A6FD4']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.botonComoJugarGradient}
                   >
-                    <Ionicons name="help-circle" size={22} color="#1A365D" />
-                    <Text style={styles.textoComoJugar}>¿Cómo se juega?</Text>
+                    <Ionicons name="help-circle" size={22} color="#FFFFFF" />
+                    <Text style={styles.textoComoJugar}>¡Aprende y Gana!</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </Animated.View>
@@ -459,22 +470,44 @@ const styles = StyleSheet.create({
   },
 
   bloqueSimple: {
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 14,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    borderRadius: 24,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 100,
+    elevation: 2,
+    shadowColor: '#1A365D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  filaIzquierda: {
+    flex: 1,
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  filaDerecha: {
+    flexShrink: 0,
   },
   tituloSimple: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 18,
-    color: theme.text,
-    marginBottom: 4,
+    color: '#1A365D',
   },
   textoSimple: {
     fontFamily: 'Baloo2_700Bold',
     fontSize: 14,
-    color: theme.text,
+    color: '#4A6FD4',
     lineHeight: 20,
+    marginTop: 2,
+  },
+  munecoSimple: {
+    width: 80,
+    height: 80,
   },
 
   filaSeccion: {
@@ -503,14 +536,14 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderWidth: 2.5,
-    borderColor: '#1A3C5E',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
     borderRadius: 50,
   },
   textoComoJugar: {
     fontFamily: 'Baloo2_800ExtraBold',
     fontSize: 13,
-    color: '#1A365D',
+    color: '#FFFFFF',
   },
 
   gridCategorias: {

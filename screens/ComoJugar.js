@@ -1,4 +1,5 @@
 // screens/ComoJugar.js
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
@@ -21,46 +22,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer } from "expo-audio";
 
-const { width, height } = Dimensions.get("window");
+import { TUTORIAL_PASOS, TUTORIAL_TEXTOS, TUTORIAL_AUDIOS, TUTORIAL_CONFIG } from "../data/tutorial";
 
-const PASOS = [
-  {
-    id: 1,
-    numero: "1",
-    titulo: "Elige una Categoría",
-    descripcion: "Toca la tarjeta de la categoría que más te guste",
-    color: "#8B5CF6",
-    imagen: require("../assets/images/cat_animales.png"),
-    audio: require("../assets/sounds/paso1.mp3"),
-  },
-  {
-    id: 2,
-    numero: "2",
-    titulo: "Observa la Silueta",
-    descripcion: "Mira la silueta. ¿Sabes qué animal es?",
-    color: "#4FC3D5",
-    imagen: require("../assets/images/Animales/gato silueta.png"),
-    audio: require("../assets/sounds/paso2.mp3"),
-  },
-  {
-    id: 3,
-    numero: "3",
-    titulo: "Elige tu Respuesta",
-    descripcion: "Lee la pregunta y toca la opción correcta",
-    color: "#FFB347",
-    imagen: require("../assets/images/Animales/gato color.png"),
-    audio: require("../assets/sounds/paso3.mp3"),
-  },
-  {
-    id: 4,
-    numero: "4",
-    titulo: "Gana Estrellas",
-    descripcion: "Cada respuesta correcta te da una estrella",
-    color: "#FFD166",
-    imagen: require("../assets/images/estrella.png"),
-    audio: require("../assets/sounds/paso4.mp3"),
-  },
-];
+const { width, height } = Dimensions.get("window");
 
 function useFlote(distancia, duracion, delay = 0) {
   const valor = useRef(new Animated.Value(0)).current;
@@ -80,7 +44,7 @@ function useFlote(distancia, duracion, delay = 0) {
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
-      ]),
+      ])
     );
     anim.start();
     return () => anim.stop();
@@ -103,32 +67,25 @@ export default function ComoJugar({ navigation }) {
   const floteBurbuja1 = useFlote(12, 2800, 0);
   const floteBurbuja2 = useFlote(16, 3400, 200);
   const floteNube = useFlote(4, 3000, 300);
+  const floteSabioDemo = useFlote(6, 2400, 0);
 
-  const paso = PASOS[pasoActual];
+  const paso = TUTORIAL_PASOS[pasoActual];
 
-  const introAudio = useAudioPlayer(require("../assets/sounds/intro.mp3"));
+  const introAudio = useAudioPlayer(TUTORIAL_AUDIOS.intro);
   const pasoAudio = useAudioPlayer(paso?.audio || null);
-  const finalAudio = useAudioPlayer(
-    require("../assets/sounds/final_listo.mp3"),
-  );
+  const finalAudio = useAudioPlayer(TUTORIAL_AUDIOS.final);
 
-  // ============================================================
-  // AUDIO CENTRALIZADO - UN SOLO useEffect PARA TODOS
-  // ============================================================
   useEffect(() => {
     const reproducirAudio = async () => {
       try {
-        // Detener todos los audios primero
         await Promise.all([
           introAudio?.pause(),
           pasoAudio?.pause(),
           finalAudio?.pause(),
         ]);
 
-        // Pequeño delay para evitar conflictos
         await new Promise((resolve) => setTimeout(resolve, 200));
 
-        // Reproducir el audio correspondiente
         if (mostrandoIntro && introAudio) {
           await introAudio.seekTo(0);
           await introAudio.play();
@@ -147,27 +104,16 @@ export default function ComoJugar({ navigation }) {
     const timer = setTimeout(reproducirAudio, 400);
     return () => {
       clearTimeout(timer);
-      // Limpiar al desmontar
       try {
         introAudio?.pause();
         pasoAudio?.pause();
         finalAudio?.pause();
       } catch (e) {}
     };
-  }, [
-    pasoActual,
-    mostrandoIntro,
-    mostrandoDemo,
-    introAudio,
-    pasoAudio,
-    finalAudio,
-  ]);
+  }, [pasoActual, mostrandoIntro, mostrandoDemo, introAudio, pasoAudio, finalAudio]);
 
   if (!fontsLoaded) return null;
 
-  // ============================================================
-  // FUNCIONES DE NAVEGACIÓN CON PROTECCIÓN CONTRA DOBLE CLIC
-  // ============================================================
   const avanzar = () => {
     if (procesando) return;
     setProcesando(true);
@@ -176,7 +122,7 @@ export default function ComoJugar({ navigation }) {
       pasoAudio?.pause();
     } catch (e) {}
 
-    if (pasoActual < PASOS.length - 1) {
+    if (pasoActual < TUTORIAL_PASOS.length - 1) {
       setPasoActual(pasoActual + 1);
       scaleAnim.setValue(0.92);
       Animated.spring(scaleAnim, {
@@ -252,13 +198,11 @@ export default function ComoJugar({ navigation }) {
     setTimeout(() => setProcesando(false), 400);
   };
 
-  // ============================================================
-  // PANTALLA DE INTRODUCCIÓN
-  // ============================================================
+  // Pantalla de introducción
   if (mostrandoIntro) {
     return (
       <LinearGradient
-        colors={["#6C3FCF", "#4A6FD4", "#E8F4FD"]}
+        colors={TUTORIAL_CONFIG.colorFondo}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.8, y: 1 }}
         style={styles.fondo}
@@ -282,7 +226,7 @@ export default function ComoJugar({ navigation }) {
 
         <SafeAreaView style={styles.contenidoIntro}>
           <View style={styles.bloqueTitulo}>
-            <Text style={styles.textoTitulo}>Cómo Jugar?</Text>
+            <Text style={styles.textoTitulo}>{TUTORIAL_CONFIG.titulo}</Text>
           </View>
 
           <View style={styles.bloqueBuhoIntro}>
@@ -302,7 +246,7 @@ export default function ComoJugar({ navigation }) {
             >
               <View style={styles.globoIntroPunta} />
               <Text style={styles.globoIntroTexto}>
-                Hola! ¿Sabes cómo jugar? ¿No? no te preocupes. Yo te muestro
+                {TUTORIAL_TEXTOS.intro}
               </Text>
             </Animated.View>
           </View>
@@ -323,26 +267,35 @@ export default function ComoJugar({ navigation }) {
               <Ionicons name="arrow-forward" size={28} color="#1A365D" />
             </LinearGradient>
           </TouchableOpacity>
-
-          <View style={styles.espacioDecorativo}>
-            <View style={styles.puntitos}>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <View key={i} style={styles.puntito} />
-              ))}
-            </View>
-          </View>
         </SafeAreaView>
       </LinearGradient>
     );
   }
 
-  // ============================================================
-  // PANTALLA DE DEMOSTRACIÓN FINAL - CON 2 BOTONES
-  // ============================================================
+  // Pantalla de demostración final
   if (mostrandoDemo) {
+    const estrellasPosiciones = [
+      { top: '8%', left: '4%', size: 22 },
+      { top: '5%', right: '6%', size: 18 },
+      { top: '14%', left: '20%', size: 14 },
+      { top: '20%', right: '18%', size: 20 },
+      { top: '26%', left: '6%', size: 12 },
+      { top: '32%', right: '4%', size: 16 },
+      { bottom: '22%', left: '5%', size: 18 },
+      { bottom: '28%', right: '4%', size: 12 },
+      { bottom: '16%', left: '18%', size: 20 },
+      { bottom: '10%', right: '20%', size: 14 },
+      { bottom: '3%', left: '8%', size: 16 },
+      { bottom: '2%', right: '5%', size: 22 },
+      { top: '50%', left: '2%', size: 10 },
+      { top: '55%', right: '2%', size: 10 },
+      { top: '75%', left: '3%', size: 8 },
+      { top: '80%', right: '3%', size: 8 },
+    ];
+
     return (
       <LinearGradient
-        colors={["#6C3FCF", "#4A6FD4", "#E8F4FD"]}
+        colors={TUTORIAL_CONFIG.colorFondo}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.8, y: 1 }}
         style={styles.fondo}
@@ -364,6 +317,40 @@ export default function ComoJugar({ navigation }) {
           ]}
         />
 
+        {/* Estrellas decorativas */}
+        {estrellasPosiciones.map((pos, index) => (
+          <Animated.View
+            key={index}
+            style={[
+              styles.estrellaRegada,
+              {
+                top: pos.top,
+                left: pos.left,
+                right: pos.right,
+                bottom: pos.bottom,
+              },
+            ]}
+          >
+            <Ionicons name="star" size={pos.size} color="#FFD166" />
+          </Animated.View>
+        ))}
+
+        {/* Título arriba */}
+        <View style={styles.demoHeader}>
+          <Text style={styles.demoHeaderTitulo}>Aprende y Gana</Text>
+        </View>
+
+        {/* Búho - pantalla final */}
+        <View style={styles.buhoEsquinaFinal}>
+          <Animated.View style={{ transform: [{ translateY: floteSabioDemo }] }}>
+            <Image
+              source={require("../assets/images/buho_saludando.png")}
+              style={styles.buhoEsquinaImg}
+              resizeMode="contain"
+            />
+          </Animated.View>
+        </View>
+
         <SafeAreaView style={styles.contenido}>
           <View style={styles.demoContainer}>
             <Animated.View
@@ -372,9 +359,8 @@ export default function ComoJugar({ navigation }) {
                 { transform: [{ scale: scaleAnim }] },
               ]}
             >
-              <Text style={styles.demoTitulo}>Genial!</Text>
               <Text style={styles.demoSubtitulo}>
-                Quieres que te lo repita?
+                {TUTORIAL_TEXTOS.final}
               </Text>
 
               <View style={styles.demoBotones}>
@@ -412,43 +398,15 @@ export default function ComoJugar({ navigation }) {
               </View>
             </Animated.View>
           </View>
-
-          {/* Búho en esquina - posiciones originales SIN MODIFICAR */}
-          <View
-            style={[styles.bloqueBuhoDialogo, { pointerEvents: "box-none" }]}
-          >
-            <Animated.View
-              style={[
-                styles.buhoEsquina,
-                { transform: [{ translateY: floteBuho }] },
-              ]}
-            >
-              <Image
-                source={require("../assets/images/buho_saludando.png")}
-                style={styles.buhoEsquinaImg}
-                resizeMode="contain"
-              />
-            </Animated.View>
-          </View>
-
-          <View style={styles.espacioDecorativo}>
-            <View style={styles.puntitos}>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <View key={i} style={styles.puntito} />
-              ))}
-            </View>
-          </View>
         </SafeAreaView>
       </LinearGradient>
     );
   }
 
-  // ============================================================
-  // TUTORIAL PASO A PASO - CON BOTÓN ATRÁS
-  // ============================================================
+  // Pantalla de pasos del tutorial
   return (
     <LinearGradient
-      colors={["#6C3FCF", "#4A6FD4", "#E8F4FD"]}
+      colors={TUTORIAL_CONFIG.colorFondo}
       start={{ x: 0.2, y: 0 }}
       end={{ x: 0.8, y: 1 }}
       style={styles.fondo}
@@ -471,7 +429,6 @@ export default function ComoJugar({ navigation }) {
       />
 
       <SafeAreaView style={styles.contenido}>
-        {/* Header CON BOTÓN ATRÁS + PUNTOS DE PROGRESO */}
         <View style={styles.header}>
           <TouchableOpacity
             style={[
@@ -486,7 +443,7 @@ export default function ComoJugar({ navigation }) {
           </TouchableOpacity>
 
           <View style={styles.progresoPuntos}>
-            {PASOS.map((_, index) => (
+            {TUTORIAL_PASOS.map((_, index) => (
               <View
                 key={index}
                 style={[
@@ -498,7 +455,6 @@ export default function ComoJugar({ navigation }) {
             ))}
           </View>
 
-          {/* Espaciador para mantener centrado */}
           <View style={{ width: 40 }} />
         </View>
 
@@ -509,13 +465,11 @@ export default function ComoJugar({ navigation }) {
           </View>
 
           <View style={styles.imagenPasoContainer}>
-            <View style={styles.imagenPasoMarco}>
-              <Image
-                source={paso.imagen}
-                style={styles.imagenPaso}
-                resizeMode="contain"
-              />
-            </View>
+            <Image
+              source={paso.imagen}
+              style={styles.imagenPaso}
+              resizeMode="contain"
+            />
           </View>
 
           <TouchableOpacity
@@ -531,7 +485,7 @@ export default function ComoJugar({ navigation }) {
               style={styles.botonSiguienteGradient}
             >
               <Text style={styles.botonSiguienteTexto}>
-                {pasoActual === PASOS.length - 1
+                {pasoActual === TUTORIAL_PASOS.length - 1
                   ? "Ver demostración"
                   : "Siguiente"}
               </Text>
@@ -540,20 +494,17 @@ export default function ComoJugar({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Búho + Globo - posiciones ORIGINALES SIN MODIFICAR */}
-        <View style={[styles.bloqueBuhoDialogo, { pointerEvents: "box-none" }]}>
-          <Animated.View
-            style={[
-              styles.buhoEsquina,
-              { transform: [{ translateY: floteBuho }] },
-            ]}
-          >
-            <Image
-              source={require("../assets/images/buho_saludando.png")}
-              style={styles.buhoEsquinaImg}
-              resizeMode="contain"
-            />
-          </Animated.View>
+        {/* Búho - pasos */}
+        <View style={styles.bloqueBuhoDialogo}>
+          <View style={styles.buhoEsquinaPasos}>
+            <Animated.View style={{ transform: [{ translateY: floteBuho }] }}>
+              <Image
+                source={require("../assets/images/buho_saludando.png")}
+                style={styles.buhoEsquinaImg}
+                resizeMode="contain"
+              />
+            </Animated.View>
+          </View>
 
           <Animated.View
             style={[
@@ -565,19 +516,11 @@ export default function ComoJugar({ navigation }) {
             <Text
               style={styles.globoTexto}
               adjustsFontSizeToFit
-              numberOfLines={2}
+              numberOfLines={3}
             >
               {paso.descripcion}
             </Text>
           </Animated.View>
-        </View>
-
-        <View style={styles.espacioDecorativo}>
-          <View style={styles.puntitos}>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <View key={i} style={styles.puntito} />
-            ))}
-          </View>
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -587,9 +530,6 @@ export default function ComoJugar({ navigation }) {
 const styles = StyleSheet.create({
   fondo: { flex: 1 },
 
-  // ============================================================
-  // PANTALLA INTRO
-  // ============================================================
   contenidoIntro: {
     flex: 1,
     paddingHorizontal: 24,
@@ -656,7 +596,7 @@ const styles = StyleSheet.create({
   },
   globoIntroTexto: {
     fontFamily: "Baloo2_700Bold",
-    fontSize: width * 0.045,
+    fontSize: width * 0.05,
     color: "#1A365D",
     textAlign: "center",
     lineHeight: width * 0.06,
@@ -688,9 +628,6 @@ const styles = StyleSheet.create({
     color: "#1A365D",
   },
 
-  // ============================================================
-  // GENERAL
-  // ============================================================
   contenido: {
     flex: 1,
     paddingHorizontal: 16,
@@ -781,28 +718,21 @@ const styles = StyleSheet.create({
     width: width * 0.72,
     height: width * 0.72,
     marginBottom: 6,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  imagenPasoMarco: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 32,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
+    borderRadius: 28,
+    overflow: "hidden",
+    backgroundColor: "#1A365D",
     borderWidth: 4,
-    borderColor: "rgba(255,255,255,0.25)",
+    borderColor: "rgba(255,255,255,0.15)",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    elevation: 10,
   },
   imagenPaso: {
     width: "100%",
     height: "100%",
+    resizeMode: "contain",
   },
 
   botonSiguiente: {
@@ -831,21 +761,20 @@ const styles = StyleSheet.create({
     color: "#1A365D",
   },
 
-  // ============================================================
-  // BÚHO + GLOBO - POSICIONES ORIGINALES SIN MODIFICAR
-  // ============================================================
-  bloqueBuhoDialogo: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "flex-start",
-    width: "100%",
-    paddingLeft: 0,
-    position: "relative",
-  },
-  buhoEsquina: {
+  // Búho - estilos separados
+  buhoEsquinaPasos: {
     position: "absolute",
     bottom: 0,
     left: -70,
+    width: 300,
+    height: 300,
+    zIndex: 5,
+    pointerEvents: "none",
+  },
+  buhoEsquinaFinal: {
+    position: "absolute",
+    bottom: 35,
+    left: -55,
     width: 300,
     height: 300,
     zIndex: 5,
@@ -855,6 +784,16 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+
+  bloqueBuhoDialogo: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "flex-start",
+    width: "100%",
+    paddingLeft: 0,
+    position: "relative",
+  },
+
   globoDialogo: {
     backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 20,
@@ -892,19 +831,34 @@ const styles = StyleSheet.create({
     lineHeight: width * 0.05,
   },
 
-  // ============================================================
-  // DEMO FINAL - CON 2 BOTONES
-  // ============================================================
+  // Estilos para la pantalla final
+  demoHeader: {
+    position: "absolute",
+    top: 60,
+    width: "100%",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  demoHeaderTitulo: {
+    fontFamily: "Baloo2_800ExtraBold",
+    fontSize: width * 0.095,
+    color: "#FFFFFF",
+    textShadowColor: "rgba(0,0,0,0.15)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
   demoContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   tarjetaDemo: {
     backgroundColor: "rgba(255,255,255,0.92)",
     borderRadius: 32,
-    padding: 36,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
     alignItems: "center",
     width: "100%",
     elevation: 8,
@@ -912,85 +866,78 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
     shadowRadius: 14,
-  },
-  demoTitulo: {
-    fontFamily: "Baloo2_800ExtraBold",
-    fontSize: width * 0.1,
-    color: "#1A365D",
-    marginBottom: 8,
-    textAlign: "center",
+    zIndex: 10,
   },
   demoSubtitulo: {
     fontFamily: "Baloo2_700Bold",
-    fontSize: width * 0.05,
-    color: "#4A6FD4",
+    fontSize: width * 0.045,
+    color: "#1A365D",
     textAlign: "center",
-    marginBottom: 28,
-    lineHeight: width * 0.065,
+    lineHeight: width * 0.06,
+    marginBottom: 16,
+    paddingHorizontal: 10,
   },
   demoBotones: {
     flexDirection: "row",
     width: "100%",
-    gap: 16,
+    gap: 20,
     justifyContent: "center",
   },
   botonSi: {
     flex: 1,
-    borderRadius: 50,
+    maxWidth: 160,
+    aspectRatio: 1,
+    borderRadius: 28,
     overflow: "hidden",
-    elevation: 4,
+    elevation: 6,
     shadowColor: "#1A365D",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 0,
   },
   botonSiGradient: {
-    paddingVertical: 16,
+    flex: 1,
     alignItems: "center",
-    borderWidth: 3,
+    justifyContent: "center",
+    borderWidth: 2,
     borderColor: "#1A3C5E",
-    borderRadius: 50,
+    borderRadius: 28,
   },
   botonSiTexto: {
     fontFamily: "Baloo2_800ExtraBold",
-    fontSize: width * 0.065,
+    fontSize: 24,
     color: "#FFFFFF",
   },
   botonNo: {
     flex: 1,
-    borderRadius: 50,
+    maxWidth: 160,
+    aspectRatio: 1,
+    borderRadius: 28,
     overflow: "hidden",
-    elevation: 4,
+    elevation: 6,
     shadowColor: "#1A365D",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 0,
   },
   botonNoGradient: {
-    paddingVertical: 16,
+    flex: 1,
     alignItems: "center",
-    borderWidth: 3,
+    justifyContent: "center",
+    borderWidth: 2,
     borderColor: "#1A3C5E",
-    borderRadius: 50,
+    borderRadius: 28,
   },
   botonNoTexto: {
     fontFamily: "Baloo2_800ExtraBold",
-    fontSize: width * 0.065,
+    fontSize: 24,
     color: "#FFFFFF",
   },
 
-  espacioDecorativo: {
-    alignItems: "center",
-    marginTop: 6,
-  },
-  puntitos: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  puntito: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "rgba(255,255,255,0.25)",
+  // Estrellas regadas por la pantalla
+  estrellaRegada: {
+    position: "absolute",
+    zIndex: 1,
+    opacity: 0.35,
   },
 });
