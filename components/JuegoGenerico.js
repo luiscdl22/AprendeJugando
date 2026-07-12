@@ -575,13 +575,24 @@ export default function JuegoGenerico({
 
           {/* ─── TARJETA PARA TIPO SILUETA (REDUCIDA) ─── */}
           {nivel.tipo === "silueta" && (
-            <Animated.View style={[styles.tarjetaSilueta, styles.tarjetaSiluetaOpcionSilueta]}>
-              <Text style={[styles.preguntaDentro, styles.preguntaDentroSilueta]}>
+            <Animated.View
+              style={[
+                styles.tarjetaSilueta,
+                styles.tarjetaSiluetaOpcionSilueta,
+              ]}
+            >
+              <Text
+                style={[styles.preguntaDentro, styles.preguntaDentroSilueta]}
+              >
                 {etiquetaTipo()}
               </Text>
 
               <View
-                style={[styles.circuloImagen, styles.circuloImagenSilueta, { backgroundColor: colorFondo }]}
+                style={[
+                  styles.circuloImagen,
+                  styles.circuloImagenSilueta,
+                  { backgroundColor: colorFondo },
+                ]}
               >
                 <Animated.View
                   style={{
@@ -589,15 +600,22 @@ export default function JuegoGenerico({
                     opacity: opacidadImagen,
                   }}
                 >
-                  <Text style={[styles.nombreGrande, styles.nombreGrandeSilueta]}>
+                  <Text
+                    style={[styles.nombreGrande, styles.nombreGrandeSilueta]}
+                  >
                     {nivel.item.nombre}
                   </Text>
                 </Animated.View>
               </View>
 
-              <View style={[styles.contenedorPista, styles.contenedorPistaSilueta]}>
+              <View
+                style={[styles.contenedorPista, styles.contenedorPistaSilueta]}
+              >
                 <Ionicons name="bulb-outline" size={16} color="#FFD166" />
-                <Text style={[styles.textoPistaFijo, styles.textoPistaFijoSilueta]} numberOfLines={2}>
+                <Text
+                  style={[styles.textoPistaFijo, styles.textoPistaFijoSilueta]}
+                  numberOfLines={2}
+                >
                   {nivel.item.pista}
                 </Text>
               </View>
@@ -705,49 +723,58 @@ export default function JuegoGenerico({
             <View style={styles.opcionesSilueta}>
               {/* Fila superior: opción 1 y opción 3 */}
               <View style={styles.filaSiluetaSuperior}>
-                {[nivel.opcionesItems[0], nivel.opcionesItems[2]].map((item) => {
-                  const seleccionada = opcionElegida === item.id;
-                  const esCorrecta = item.id === nivel.respuestaCorrecta;
+                {[nivel.opcionesItems[0], nivel.opcionesItems[2]].map(
+                  (item) => {
+                    const seleccionada = opcionElegida === item.id;
+                    const esCorrecta = item.id === nivel.respuestaCorrecta;
 
-                  let colorBase = "#FFFFFF";
-                  let bordeBase = "rgba(26,60,94,0.2)";
+                    let colorBase = "#FFFFFF";
+                    let bordeBase = "rgba(26,60,94,0.2)";
 
-                  if (respuesta) {
-                    if (esCorrecta) {
-                      colorBase = "#88CC88";
-                      bordeBase = "#4AAE4A";
+                    if (respuesta) {
+                      if (esCorrecta) {
+                        colorBase = "#88CC88";
+                        bordeBase = "#4AAE4A";
+                      } else if (seleccionada) {
+                        colorBase = "#F47C7C";
+                        bordeBase = "#D45A5A";
+                      }
                     } else if (seleccionada) {
-                      colorBase = "#F47C7C";
-                      bordeBase = "#D45A5A";
+                      colorBase = "#FFF8E1";
+                      bordeBase = "#FFD166";
                     }
-                  } else if (seleccionada) {
-                    colorBase = "#FFF8E1";
-                    bordeBase = "#FFD166";
-                  }
 
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[
-                        styles.tarjetaSiluetaOpcion,
-                        styles.tarjetaSiluetaSuperior,
-                        { backgroundColor: colorBase, borderColor: bordeBase },
-                      ]}
-                      onPress={() => {
-                        setOpcionElegida(item.id);
-                        handleSeleccionarOpcion(item.id);
-                      }}
-                      activeOpacity={0.84}
-                      disabled={!!respuesta || mostrarSuspenso}
-                    >
-                      <Image
-                        source={mostrarColor && esCorrecta ? item.color : item.silueta}
-                        style={styles.siluetaOpcionGrande}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                  );
-                })}
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={[
+                          styles.tarjetaSiluetaOpcion,
+                          styles.tarjetaSiluetaSuperior,
+                          {
+                            backgroundColor: colorBase,
+                            borderColor: bordeBase,
+                          },
+                        ]}
+                        onPress={() => {
+                          setOpcionElegida(item.id);
+                          handleSeleccionarOpcion(item.id);
+                        }}
+                        activeOpacity={0.84}
+                        disabled={!!respuesta || mostrarSuspenso}
+                      >
+                        <Image
+                          source={
+                            mostrarColor && esCorrecta
+                              ? item.color
+                              : item.silueta
+                          }
+                          style={styles.siluetaOpcionGrande}
+                          resizeMode="contain"
+                        />
+                      </TouchableOpacity>
+                    );
+                  },
+                )}
               </View>
 
               {/* Fila inferior: opción 2 (centrada) */}
@@ -788,7 +815,9 @@ export default function JuegoGenerico({
                       disabled={!!respuesta || mostrarSuspenso}
                     >
                       <Image
-                        source={mostrarColor && esCorrecta ? item.color : item.silueta}
+                        source={
+                          mostrarColor && esCorrecta ? item.color : item.silueta
+                        }
                         style={styles.siluetaOpcionGrande}
                         resizeMode="contain"
                       />
@@ -840,13 +869,28 @@ export default function JuegoGenerico({
       <Correcto
         visible={mostrarResultado && esCorrecto}
         onComplete={handleCorrectoCompletado}
+        estiloExtra={
+          nivel?.tipo === "silueta"
+            ? styles.textoCorrectoSilueta
+            : nivel?.tipo === "sino"
+              ? styles.textoCorrectoSino
+              : null
+        }
       />
 
+      {/* ✅ Incorrecto con estilos separados para silueta y sino */}
       <Incorrecto
         visible={mostrarResultado && !esCorrecto}
         nombre={nivel?.item?.nombre || "Animal"}
         tipo={nivel?.tipo}
         onComplete={handleIncorrectoCompletado}
+        estiloExtra={
+          nivel?.tipo === "silueta"
+            ? styles.textoIncorrectoSilueta
+            : nivel?.tipo === "sino"
+              ? styles.textoIncorrectoSino
+              : null
+        }
       />
 
       {mostrarSabiasQue && (
@@ -1378,4 +1422,23 @@ const styles = StyleSheet.create({
   },
   estrellaFin: { width: 28, height: 28 },
   estrellaFinVacia: { tintColor: "rgba(255,255,255,0.35)" },
+
+  // ESTILOS PARA CORRECTO - Silueta y Sino comparten el mismo
+  textoCorrectoSilueta: {
+    marginBottom: 150,
+  },
+
+  // ESTILOS PARA INCORRECTO - Separados por modo
+  textoIncorrectoSilueta: {
+    marginBottom: 180, // Para silueta (sube más)
+    marginTop: -150,
+  },
+textoCorrectoSino: {
+  marginBottom: 180,  // Para sí/no - MISMO que Incorrecto
+  marginTop: -120,    // Para sí/no - MISMO que Incorrecto
+},
+  textoIncorrectoSino: {
+    marginBottom: 180, // Para sí/no (sube menos)
+    marginTop: -120,
+  },
 });

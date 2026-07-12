@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 
-export default function Incorrecto({ visible, nombre, onComplete, tipo }) {
+export default function Incorrecto({ visible, nombre, onComplete, tipo, estiloExtra }) {
   const scale = new Animated.Value(0.3);
   const opacity = new Animated.Value(0);
 
@@ -33,11 +33,12 @@ export default function Incorrecto({ visible, nombre, onComplete, tipo }) {
 
   if (!visible) return null;
 
-  const mostrarEra = tipo !== "silueta";
+  // ✅ "Era:" SOLO se muestra en modo "nombre"
+  const mostrarEra = tipo === "nombre";
 
   return (
     <Animated.View style={[styles.overlay, { opacity, transform: [{ scale }] }]}>
-      <Text style={[styles.texto, tipo === "silueta" && styles.textoSilueta]}>
+      <Text style={[styles.texto, tipo === "silueta" && styles.textoSilueta, estiloExtra]}>
         ¡UPS! ESA NO ES
       </Text>
       {mostrarEra && (
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     marginTop: -90,
   },
   textoSilueta: {
-    marginTop: -150, 
+    marginTop: -150,
   },
   era: {
     fontFamily: "Baloo2_700Bold",

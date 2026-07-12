@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 
-export default function Correcto({ visible, onComplete }) {
+export default function Correcto({ visible, onComplete, estiloExtra }) {
   const scale = new Animated.Value(0.3);
   const opacity = new Animated.Value(0);
 
@@ -35,7 +35,7 @@ export default function Correcto({ visible, onComplete }) {
 
   return (
     <Animated.View style={[styles.overlay, { opacity, transform: [{ scale }] }]}>
-      <Text style={styles.texto}>¡CORRECTO!</Text>
+      <Text style={[styles.texto, estiloExtra]}>¡CORRECTO!</Text>
     </Animated.View>
   );
 }
@@ -59,7 +59,5 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0,0,0,0.15)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
-    marginBottom: -45,
-    marginTop: 1,
   },
 });
