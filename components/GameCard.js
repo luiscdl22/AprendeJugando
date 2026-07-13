@@ -7,9 +7,8 @@ import {
 } from "@expo-google-fonts/baloo-2";
 
 const theme = {
-  //cardActiveShadow: '#D64545',   // sombra coral oscuro para tarjeta activa
-  cardLockedBg: "#D6E4F0", // azul pastel para bloqueadas
-  cardLockedShadow: "#A8C2DC", // azul pastel oscuro para sombra bloqueada
+  cardLockedBg: "#D6E4F0", 
+  cardLockedShadow: "#A8C2DC", 
   lockIcon: "#FFD166",
   textActive: "#FFFFFF",
   textLocked: "rgba(26,54,93,0.55)",
@@ -17,8 +16,6 @@ const theme = {
 
 /**
  * GameCard — tarjeta de actividad DRY.
- * Sin contornos blancos — el volumen viene de la sombra de color sólida
- * y del círculo interior semitransparente del ícono.
  *
  * Props:
  *   titulo      (string)  — nombre de la actividad
@@ -27,7 +24,7 @@ const theme = {
  *   color       (string)  — color de fondo activo
  *   onPress     (func)    — acción al presionar
  *   pendiente   (bool)    — bloqueada
- *   horizontal  (bool)    — layout apaisado
+ *   horizontal  (bool)    — layout
  */
 export default function GameCard({
   titulo,
@@ -42,7 +39,6 @@ export default function GameCard({
   if (!fontsLoaded) return null;
 
   const bgColor = pendiente ? theme.cardLockedBg : color;
-  // Sombra del mismo tono que la tarjeta pero más oscura — efecto juguete 3D
   const shadowColor = pendiente
     ? theme.cardLockedShadow
     : theme.cardActiveShadow;
@@ -57,7 +53,6 @@ export default function GameCard({
       onPress={pendiente ? null : onPress}
       activeOpacity={pendiente ? 1 : 0.88}
     >
-      {/* Círculo de ícono con fondo semitransparente blanco */}
       <View style={[styles.circuloIcono, horizontal && styles.circuloIconoH]}>
         {pendiente ? (
           <Text style={styles.candado}>Bloqueado</Text>
@@ -105,7 +100,7 @@ export default function GameCard({
 }
 
 const styles = StyleSheet.create({
-  // Tarjeta base — sin border, sombra sólida de color da el volumen
+  // Tarjeta base 
   tarjeta: {
     borderRadius: 28,
     borderWidth: 0,
@@ -128,7 +123,7 @@ const styles = StyleSheet.create({
     minHeight: 88,
   },
 
-  // Círculo de ícono — fondo blanco semitransparente, da profundidad sin borde
+  // Círculo de ícono 
   circuloIcono: {
     width: 96,
     height: 96,

@@ -344,20 +344,19 @@ export default function JuegoGenerico({
   };
 
   const etiquetaTipo = () => {
-    if (!nivel) return "";
-    if (nivel.tipo === "nombre") return "¿Qué animal es este?";
-    if (nivel.tipo === "sino") {
-      const articulo = nivel.item.articulo === "la" ? "una" : "un";
-      return `¿Es ${articulo} ${nivel.nombreMostrado}?`;
-    }
-    if (nivel.tipo === "silueta") {
-      return `Encuentra la silueta`;
-    }
+  if (!nivel) return '';
+  if (nivel.tipo === 'nombre') return '¿Qué es esta silueta?';
+  if (nivel.tipo === 'sino') {
+    const terminacionFemenina = ['a', 'A'].includes(nivel.nombreMostrado.slice(-1));
+    const articulo = terminacionFemenina ? 'una' : 'un';
+    return `¿Es ${articulo} ${nivel.nombreMostrado}?`;
+  }
+    if (nivel.tipo === 'silueta') return 'Encuentra la silueta';
   };
 
   const etiquetaBadge = () => {
     if (!nivel) return "";
-    if (nivel.tipo === "nombre") return "¿Qué animal es?";
+    if (nivel.tipo === "nombre") return "¿Qué es esta silueta?";
     if (nivel.tipo === "sino") return "¿Es cierto o no?";
     if (nivel.tipo === "silueta") return "Elige la silueta";
   };
@@ -366,26 +365,23 @@ export default function JuegoGenerico({
     const porcentaje = puntaje / total;
     if (porcentaje === 1) {
       return {
-        mensaje:
-          "¡Perfecto! ¡Eres un campeón! Has aprendido todos los animales. ¡Felicidades!",
-        icono: "trophy",
+        mensaje: '¡Perfecto! ¡Eres un campeón! Respondiste todo correctamente. ¡Felicidades!',
+        icono: 'trophy',
       };
     } else if (porcentaje >= 0.7) {
       return {
-        mensaje: "¡Excelente! Casi lo logras. ¡Eres muy inteligente!",
-        icono: "star",
+        mensaje: '¡Excelente! Casi lo logras. ¡Eres muy inteligente!',
+        icono: 'star',
       };
     } else if (porcentaje >= 0.4) {
       return {
-        mensaje:
-          "¡Bien hecho! Estás aprendiendo mucho. ¡Un poquito más y lo logras!",
-        icono: "happy",
+        mensaje: '¡Bien hecho! Estás aprendiendo mucho. ¡Un poquito más y lo logras!',
+        icono: 'happy',
       };
     } else {
       return {
-        mensaje:
-          "¡No te rindas! Cada vez que juegas aprendes más. ¡Sigue practicando!",
-        icono: "fitness",
+        mensaje: '¡No te rindas! Cada vez que juegas aprendes más. ¡Sigue practicando!',
+        icono: 'fitness',
       };
     }
   };
@@ -541,9 +537,7 @@ export default function JuegoGenerico({
             <Animated.View style={styles.tarjetaSilueta}>
               <Text style={styles.preguntaDentro}>{etiquetaTipo()}</Text>
 
-              <View
-                style={[styles.circuloImagen, { backgroundColor: colorFondo }]}
-              >
+              <View style={styles.circuloImagen}>
                 <Animated.View
                   style={{
                     transform: [{ scale: escalaImagen }],
@@ -587,13 +581,7 @@ export default function JuegoGenerico({
                 {etiquetaTipo()}
               </Text>
 
-              <View
-                style={[
-                  styles.circuloImagen,
-                  styles.circuloImagenSilueta,
-                  { backgroundColor: colorFondo },
-                ]}
-              >
+              <View style={[styles.circuloImagen, styles.circuloImagenSilueta]}>
                 <Animated.View
                   style={{
                     transform: [{ scale: escalaImagen }],
@@ -602,6 +590,8 @@ export default function JuegoGenerico({
                 >
                   <Text
                     style={[styles.nombreGrande, styles.nombreGrandeSilueta]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
                   >
                     {nivel.item.nombre}
                   </Text>
@@ -878,7 +868,6 @@ export default function JuegoGenerico({
         }
       />
 
-      {/* ✅ Incorrecto con estilos separados para silueta y sino */}
       <Incorrecto
         visible={mostrarResultado && !esCorrecto}
         nombre={nivel?.item?.nombre || "Animal"}
@@ -1089,15 +1078,15 @@ const styles = StyleSheet.create({
     width: width * 0.68,
     height: width * 0.68,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#1A3C5E',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 8,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   silueta: {
-    width: width * 0.55,
-    height: width * 0.33,
+    width: width * 0.68,
+    height: width * 0.68,
   },
   nombreGrande: {
     fontFamily: "Baloo2_800ExtraBold",
@@ -1430,15 +1419,15 @@ const styles = StyleSheet.create({
 
   // ESTILOS PARA INCORRECTO - Separados por modo
   textoIncorrectoSilueta: {
-    marginBottom: 180, // Para silueta (sube más)
+    marginBottom: 180, 
     marginTop: -150,
   },
 textoCorrectoSino: {
-  marginBottom: 180,  // Para sí/no - MISMO que Incorrecto
-  marginTop: -120,    // Para sí/no - MISMO que Incorrecto
+  marginBottom: 180,  // Para sí/no 
+  marginTop: -120,    // Para sí/no 
 },
   textoIncorrectoSino: {
-    marginBottom: 180, // Para sí/no (sube menos)
+    marginBottom: 180, // Para sí/no 
     marginTop: -120,
   },
 });
