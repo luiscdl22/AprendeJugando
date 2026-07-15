@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "AprendeJugando",
-    "slug": "AprendeJugando",
+    "slug": "aprendejugando",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.ldeleonsteam.aprendejugando"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,6 +34,12 @@
       "expo-font",
       "expo-audio",
       "expo-video"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3fe4a52b-c904-481c-9af1-bcd59582bba2"
+      }
+    },
+    "owner": "ldeleons-team"
   }
 }

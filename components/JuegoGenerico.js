@@ -23,6 +23,7 @@ import {
 } from "@expo-google-fonts/baloo-2";
 import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer } from "expo-audio";
+import { Audio } from "expo-av";
 
 import { useStars } from "../context/StarContext";
 import CustomButton from "../components/CustomButton";
@@ -32,37 +33,53 @@ import Incorrecto from "../components/Incorrecto";
 
 const { width, height } = Dimensions.get("window");
 
+// MAPA DE MUSICA POR CATEGORIA
+const MUSICA_CATEGORIA = {
+  animales: require("../assets/sounds/musica/animales.mp3"),
+  vehiculos: require("../assets/sounds/musica/vehiculos.mp3"),
+  utiles: require("../assets/sounds/musica/utiles.mp3"),
+  naturaleza: require("../assets/sounds/musica/naturaleza.mp3"),
+};
+
 function mezclar(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
 function otrosAleatorios(todos, excluirId, cantidad) {
-  return mezclar(todos.filter((a) => a.id !== excluirId)).slice(0, cantidad);
+  const disponibles = todos.filter((a) => a.id !== excluirId);
+  const seleccionados = mezclar(disponibles).slice(0, Math.min(cantidad, disponibles.length));
+  return seleccionados;
 }
 
 function generarNiveles(datos, tipos) {
-  const seleccionados = mezclar(datos).slice(0, datos.length);
+  const seleccionados = mezclar(datos).slice(0, 5);
+  
   return seleccionados.map((item, i) => {
-    const tipo =
-      tipos[
-        i % tipos.length === 0 && i > 0
-          ? Math.floor(Math.random() * tipos.length)
-          : i % tipos.length
-      ];
+    const tipo = tipos[i % tipos.length];
     const otros = otrosAleatorios(datos, item.id, 2);
 
     if (tipo === "nombre") {
+      const opcionesBase = [item.nombre, ...otros.map((o) => o.nombre)];
+      while (opcionesBase.length < 3) {
+        const extra = datos.filter(d => !opcionesBase.includes(d.nombre) && d.id !== item.id);
+        if (extra.length === 0) break;
+        opcionesBase.push(extra[0].nombre);
+      }
+      const opciones = mezclar(opcionesBase);
       return {
         tipo,
         item,
         dato: item.dato,
-        opciones: mezclar([item.nombre, ...otros.map((o) => o.nombre)]),
+        opciones: opciones,
         respuestaCorrecta: item.nombre,
       };
     }
     if (tipo === "sino") {
-      const esVerdadero = Math.random() > 0.5;
-      const nombreMostrado = esVerdadero ? item.nombre : otros[0].nombre;
+      // 50% de probabilidad de mostrar el animal correcto
+      const mostrarCorrecto = Math.random() > 0.5;
+      const nombreMostrado = mostrarCorrecto ? item.nombre : (otros[0]?.nombre || item.nombre);
+      const esVerdadero = nombreMostrado === item.nombre;
+      
       return {
         tipo,
         item,
@@ -72,6 +89,7 @@ function generarNiveles(datos, tipos) {
         opciones: ["Sí", "No"],
       };
     }
+    // tipo === "silueta"
     const opcionesItems = mezclar([item, ...otros]);
     return {
       tipo,
@@ -154,20 +172,92 @@ export default function JuegoGenerico({
   const nivel = niveles[indiceNivel];
   const totalNiveles = niveles.length;
 
+  // Estado para musica de fondo
+  const musicaRef = useRef(null);
+  const [musicaActiva, setMusicaActiva] = useState(true);
+
   const animalAudio = useAudioPlayer(nivel?.item?.datoAudio || null);
   const aciertoSound = useAudioPlayer(require("../assets/sounds/acierto.mp3"));
   const errorSound = useAudioPlayer(require("../assets/sounds/error.mp3"));
   const bateriaSound = useAudioPlayer(require("../assets/sounds/bateria.mp3"));
   const fiuuuSound = useAudioPlayer(require("../assets/sounds/fiuuu.mp3"));
 
+  // Cargar musica segun categoria
+  useEffect(() => {
+    const cargarMusica = async () => {
+      try {
+        if (musicaRef.current) {
+          await musicaRef.current.stopAsync();
+          await musicaRef.current.unloadAsync();
+          musicaRef.current = null;
+        }
+
+        const musicaSource = MUSICA_CATEGORIA[categoria];
+        if (!musicaSource) return;
+
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+
+        const { sound } = await Audio.Sound.createAsync(
+          musicaSource,
+          { shouldPlay: true, isLooping: true, volume: 0.25 }
+        );
+        
+        musicaRef.current = sound;
+        setMusicaActiva(true);
+        await sound.playAsync();
+      } catch (error) {
+        console.log('Error cargando musica:', error);
+      }
+    };
+
+    cargarMusica();
+
+    return () => {
+      if (musicaRef.current) {
+        musicaRef.current.stopAsync();
+        musicaRef.current.unloadAsync();
+        musicaRef.current = null;
+      }
+    };
+  }, [categoria]);
+
   useEffect(() => {
     if (finalizado) {
       actualizarEstrellas(categoria, puntos);
       setPuntajeFinal(puntos);
+      if (musicaRef.current) {
+        musicaRef.current.stopAsync();
+        musicaRef.current.unloadAsync();
+        musicaRef.current = null;
+      }
     }
   }, [actualizarEstrellas, categoria, finalizado, puntos]);
 
   if (!fontsLoaded) return null;
+
+  const pausarMusica = async () => {
+    if (musicaRef.current && musicaActiva) {
+      try {
+        await musicaRef.current.pauseAsync();
+        setMusicaActiva(false);
+      } catch (error) {}
+    }
+  };
+
+  const reanudarMusica = async () => {
+    if (musicaRef.current && !musicaActiva) {
+      try {
+        await musicaRef.current.playAsync();
+        setMusicaActiva(true);
+      } catch (error) {}
+    }
+  };
 
   const resetAnimaciones = () => {
     opacidadImagen.setValue(1);
@@ -192,6 +282,7 @@ export default function JuegoGenerico({
     setMostrarSabiasQue(false);
     setMostrarConfeti(false);
     resetAnimaciones();
+    setTimeout(() => reanudarMusica(), 500);
   };
 
   const avanzarNivel = () => {
@@ -210,6 +301,7 @@ export default function JuegoGenerico({
     setMostrarSabiasQue(false);
     setMostrarConfeti(false);
     resetAnimaciones();
+    setTimeout(() => reanudarMusica(), 500);
   };
 
   const animarCambio = (callback) => {
@@ -264,6 +356,7 @@ export default function JuegoGenerico({
     if (respuesta) return;
     setOpcionSeleccionada(opcion);
     setMostrarConfirmacion(true);
+    pausarMusica();
   };
 
   const handleConfirmarRespuesta = () => {
@@ -317,6 +410,7 @@ export default function JuegoGenerico({
   const handleRechazarRespuesta = () => {
     setMostrarConfirmacion(false);
     setOpcionSeleccionada(null);
+    setTimeout(() => reanudarMusica(), 300);
   };
 
   const handleCorrectoCompletado = () => {
@@ -344,20 +438,20 @@ export default function JuegoGenerico({
   };
 
   const etiquetaTipo = () => {
-  if (!nivel) return '';
-  if (nivel.tipo === 'nombre') return '¿Qué es esta silueta?';
-  if (nivel.tipo === 'sino') {
-    const terminacionFemenina = ['a', 'A'].includes(nivel.nombreMostrado.slice(-1));
-    const articulo = terminacionFemenina ? 'una' : 'un';
-    return `¿Es ${articulo} ${nivel.nombreMostrado}?`;
-  }
+    if (!nivel) return '';
+    if (nivel.tipo === 'nombre') return 'Que es esta silueta?';
+    if (nivel.tipo === 'sino') {
+      const terminacionFemenina = ['a', 'A'].includes(nivel.nombreMostrado.slice(-1));
+      const articulo = terminacionFemenina ? 'una' : 'un';
+      return `Es ${articulo} ${nivel.nombreMostrado}?`;
+    }
     if (nivel.tipo === 'silueta') return 'Encuentra la silueta';
   };
 
   const etiquetaBadge = () => {
     if (!nivel) return "";
-    if (nivel.tipo === "nombre") return "¿Qué es esta silueta?";
-    if (nivel.tipo === "sino") return "¿Es cierto o no?";
+    if (nivel.tipo === "nombre") return "Que es esta silueta?";
+    if (nivel.tipo === "sino") return "Es cierto o no?";
     if (nivel.tipo === "silueta") return "Elige la silueta";
   };
 
@@ -365,22 +459,22 @@ export default function JuegoGenerico({
     const porcentaje = puntaje / total;
     if (porcentaje === 1) {
       return {
-        mensaje: '¡Perfecto! ¡Eres un campeón! Respondiste todo correctamente. ¡Felicidades!',
+        mensaje: 'Perfecto! Eres un campeon! Respondiste todo correctamente. Felicidades!',
         icono: 'trophy',
       };
     } else if (porcentaje >= 0.7) {
       return {
-        mensaje: '¡Excelente! Casi lo logras. ¡Eres muy inteligente!',
+        mensaje: 'Excelente! Casi lo logras. Eres muy inteligente!',
         icono: 'star',
       };
     } else if (porcentaje >= 0.4) {
       return {
-        mensaje: '¡Bien hecho! Estás aprendiendo mucho. ¡Un poquito más y lo logras!',
+        mensaje: 'Bien hecho! Estas aprendiendo mucho. Un poquito mas y lo logras!',
         icono: 'happy',
       };
     } else {
       return {
-        mensaje: '¡No te rindas! Cada vez que juegas aprendes más. ¡Sigue practicando!',
+        mensaje: 'No te rindas! Cada vez que juegas aprendes mas. Sigue practicando!',
         icono: 'fitness',
       };
     }
@@ -409,7 +503,7 @@ export default function JuegoGenerico({
             />
 
             <Text style={styles.tituloFin}>
-              {esPerfecto ? "¡Muy bien!" : "¡Terminaste!"}
+              {esPerfecto ? "Muy bien!" : "Terminaste!"}
             </Text>
             <Text style={styles.subtituloFin}>{mensaje.mensaje}</Text>
             <Text style={styles.subtituloFin}>
@@ -437,8 +531,15 @@ export default function JuegoGenerico({
               fullWidth
             />
             <CustomButton
-              label="Volver al menú"
-              onPress={() => navigation.goBack()}
+              label="Volver al menu"
+              onPress={() => {
+                if (musicaRef.current) {
+                  musicaRef.current.stopAsync();
+                  musicaRef.current.unloadAsync();
+                  musicaRef.current = null;
+                }
+                navigation.goBack();
+              }}
               variant="secondary"
               fullWidth
               style={{ marginTop: 8 }}
@@ -487,7 +588,14 @@ export default function JuegoGenerico({
           <View style={styles.headerFila}>
             <TouchableOpacity
               style={styles.botonRegresar}
-              onPress={() => navigation.goBack()}
+              onPress={() => {
+                if (musicaRef.current) {
+                  musicaRef.current.stopAsync();
+                  musicaRef.current.unloadAsync();
+                  musicaRef.current = null;
+                }
+                navigation.goBack();
+              }}
               activeOpacity={0.8}
             >
               <Ionicons name="arrow-back" size={22} color="#1A3C5E" />
@@ -497,7 +605,11 @@ export default function JuegoGenerico({
             </View>
 
             <View style={styles.badgeEstrella}>
-              <Ionicons name="star" size={24} color="#FFD166" />
+              <Image
+                source={require("../assets/images/estrella.png")}
+                style={styles.badgeIcono}
+                resizeMode="contain"
+              />
               <Text style={styles.badgeNum}>{puntos}</Text>
             </View>
           </View>
@@ -532,7 +644,6 @@ export default function JuegoGenerico({
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scroll}
         >
-          {/* ─── TARJETA PARA TIPO NOMBRE Y SINO (NORMAL) ─── */}
           {(nivel.tipo === "nombre" || nivel.tipo === "sino") && (
             <Animated.View style={styles.tarjetaSilueta}>
               <Text style={styles.preguntaDentro}>{etiquetaTipo()}</Text>
@@ -567,7 +678,6 @@ export default function JuegoGenerico({
             </Animated.View>
           )}
 
-          {/* ─── TARJETA PARA TIPO SILUETA (REDUCIDA) ─── */}
           {nivel.tipo === "silueta" && (
             <Animated.View
               style={[
@@ -711,7 +821,6 @@ export default function JuegoGenerico({
 
           {nivel.tipo === "silueta" && (
             <View style={styles.opcionesSilueta}>
-              {/* Fila superior: opción 1 y opción 3 */}
               <View style={styles.filaSiluetaSuperior}>
                 {[nivel.opcionesItems[0], nivel.opcionesItems[2]].map(
                   (item) => {
@@ -767,7 +876,6 @@ export default function JuegoGenerico({
                 )}
               </View>
 
-              {/* Fila inferior: opción 2 (centrada) */}
               <View style={styles.filaSiluetaInferior}>
                 {[nivel.opcionesItems[1]].map((item) => {
                   const seleccionada = opcionElegida === item.id;
@@ -834,7 +942,7 @@ export default function JuegoGenerico({
               resizeMode="contain"
             />
             <Text style={styles.modalTitulo}>
-              ¿Estás seguro de tu respuesta?
+              Estas seguro de tu respuesta?
             </Text>
             <View style={styles.modalBotones}>
               <TouchableOpacity
@@ -901,7 +1009,7 @@ export default function JuegoGenerico({
             <View style={styles.tarjetaSabiasQue}>
               <View style={styles.headerSabiasQue}>
                 <Ionicons name="bulb-outline" size={24} color="#6C3FCF" />
-                <Text style={styles.tituloSabiasQue}>¿Sabías que...?</Text>
+                <Text style={styles.tituloSabiasQue}>Sabias que...?</Text>
               </View>
 
               <View style={styles.circuloSabiasQue}>
@@ -997,6 +1105,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.2)",
   },
+  badgeIcono: {
+    width: 24,
+    height: 24,
+  },
   badgeNum: {
     fontFamily: "Baloo2_800ExtraBold",
     fontSize: 18,
@@ -1054,7 +1166,6 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.4)",
   },
 
-  // ─── TARJETA NORMAL (NOMBRE Y SINO) ───
   tarjetaSilueta: {
     borderRadius: 28,
     borderWidth: 0.5,
@@ -1116,7 +1227,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
 
-  // ─── TARJETA REDUCIDA SOLO PARA SILUETA ───
   tarjetaSiluetaOpcionSilueta: {
     paddingVertical: 6,
     marginBottom: 6,
@@ -1143,7 +1253,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // ─── OPCIONES ───
   opciones: { gap: 10 },
   botonOpcion: {
     flexDirection: "row",
@@ -1412,22 +1521,19 @@ const styles = StyleSheet.create({
   estrellaFin: { width: 28, height: 28 },
   estrellaFinVacia: { tintColor: "rgba(255,255,255,0.35)" },
 
-  // ESTILOS PARA CORRECTO - Silueta y Sino comparten el mismo
   textoCorrectoSilueta: {
     marginBottom: 150,
   },
-
-  // ESTILOS PARA INCORRECTO - Separados por modo
   textoIncorrectoSilueta: {
     marginBottom: 180, 
     marginTop: -150,
   },
-textoCorrectoSino: {
-  marginBottom: 180,  // Para sí/no 
-  marginTop: -120,    // Para sí/no 
-},
+  textoCorrectoSino: {
+    marginBottom: 180,
+    marginTop: -120,
+  },
   textoIncorrectoSino: {
-    marginBottom: 180, // Para sí/no 
+    marginBottom: 180,
     marginTop: -120,
   },
 });

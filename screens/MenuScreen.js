@@ -19,6 +19,8 @@ import { useFonts, Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-font
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
+import { Audio } from 'expo-av';
+import * as Animatable from 'react-native-animatable';
 
 import GameCard from '../components/GameCard';
 import { useStars } from '../context/StarContext';
@@ -79,6 +81,8 @@ const CATEGORIAS = [
 
 const ESTRELLAS_POR_NIVEL = 5;
 
+const MUSICA_MENU = require("../assets/sounds/musica_menu.mp3");
+
 function useFlote(distancia, duracion, delay = 0) {
   const valor = useRef(new Animated.Value(0)).current;
 
@@ -138,6 +142,9 @@ export default function MenuScreen({ navigation }) {
   const [perfil, setPerfil] = useState(null);
   const { estrellas } = useStars();
 
+  const musicaRef = useRef(null);
+  const [musicaActiva, setMusicaActiva] = useState(true);
+
   const entradaHeader = useRef(new Animated.Value(0)).current;
   const entradaCards = useRef(new Animated.Value(0)).current;
   const entradaTexto = useRef(new Animated.Value(0)).current;
@@ -146,6 +153,78 @@ export default function MenuScreen({ navigation }) {
   const flote2 = useFlote(18, 3400, 200);
   const flote3 = useFlote(10, 2600, 400);
   const pulsoBoton = usePulso();
+
+  const estrellaRef = useRef(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (estrellaRef.current) {
+        estrellaRef.current.swing(800);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const cargarMusica = async () => {
+      try {
+        if (musicaRef.current) {
+          await musicaRef.current.stopAsync();
+          await musicaRef.current.unloadAsync();
+          musicaRef.current = null;
+        }
+
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+
+        const { sound } = await Audio.Sound.createAsync(
+          MUSICA_MENU,
+          { shouldPlay: true, isLooping: true, volume: 0.3 }
+        );
+        
+        musicaRef.current = sound;
+        setMusicaActiva(true);
+        await sound.playAsync();
+      } catch (error) {
+        console.log('Error cargando musica menu:', error);
+      }
+    };
+
+    cargarMusica();
+
+    return () => {
+      if (musicaRef.current) {
+        musicaRef.current.stopAsync();
+        musicaRef.current.unloadAsync();
+        musicaRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribeBlur = navigation.addListener('blur', () => {
+      if (musicaRef.current) {
+        musicaRef.current.pauseAsync();
+      }
+    });
+
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      if (musicaRef.current) {
+        musicaRef.current.playAsync();
+      }
+    });
+
+    return () => {
+      unsubscribeBlur();
+      unsubscribeFocus();
+    };
+  }, [navigation]);
 
   useEffect(() => {
     const cargar = async () => {
@@ -180,6 +259,9 @@ export default function MenuScreen({ navigation }) {
     : null;
 
   const abrirCategoria = (categoria) => {
+    if (musicaRef.current) {
+      musicaRef.current.pauseAsync();
+    }
     navigation.navigate(categoria.ruta);
   };
 
@@ -200,7 +282,12 @@ export default function MenuScreen({ navigation }) {
         <View style={styles.filaPerfil}>
           <TouchableOpacity
             style={styles.botonMiPerfil}
-            onPress={() => navigation.navigate('Perfil')}
+            onPress={() => {
+              if (musicaRef.current) {
+                musicaRef.current.pauseAsync();
+              }
+              navigation.navigate('Perfil');
+            }}
             activeOpacity={0.85}
           >
             <View style={styles.miniAvatar}>
@@ -234,16 +321,24 @@ export default function MenuScreen({ navigation }) {
               </View>
 
               <View style={styles.bloqueNombre}>
-                <Text style={styles.saludo}>¡Hola de nuevo!</Text>
+                <Text style={styles.saludo}>Hola de nuevo!</Text>
                 <Text style={styles.nombreJugador}>{perfil?.nombre ?? 'Explorador'}</Text>
               </View>
 
               <View style={styles.badgeEstrellas}>
-                <Image
-                  source={require('../assets/images/estrella.png')}
-                  style={styles.estrellaIcono}
-                  resizeMode="contain"
-                />
+                <Animatable.View
+                  ref={estrellaRef}
+                  animation="swing"
+                  duration={800}
+                  iterationCount={1}
+                  easing="ease-in-out"
+                >
+                  <Image
+                    source={require('../assets/images/estrella.png')}
+                    style={styles.estrellaIcono}
+                    resizeMode="contain"
+                  />
+                </Animatable.View>
                 <Text style={styles.badgeNum}>{totalEstrellas}</Text>
                 <Text style={styles.badgeLabel}>ESTRELLAS</Text>
               </View>
@@ -273,9 +368,9 @@ export default function MenuScreen({ navigation }) {
             ]}
           >
             <View style={styles.filaIzquierda}>
-              <Text style={styles.tituloSimple}>¡A jugar y aprender!</Text>
+              <Text style={styles.tituloSimple}>A jugar y aprender!</Text>
               <Text style={styles.textoSimple}>
-                Elige una categoría y descubre algo nuevo.
+                Elige una categoria y descubre algo nuevo.
               </Text>
             </View>
             <View style={styles.filaDerecha}>
@@ -294,12 +389,17 @@ export default function MenuScreen({ navigation }) {
             ]}
           >
             <View style={styles.filaSeccion}>
-              <Text style={styles.tituloSeccion}>Categorías</Text>
+              <Text style={styles.tituloSeccion}>Categorias</Text>
               
               <Animated.View style={{ transform: [{ scale: pulsoBoton }] }}>
                 <TouchableOpacity
                   style={styles.botonComoJugar}
-                  onPress={() => navigation.navigate('ComoJugar')}
+                  onPress={() => {
+                    if (musicaRef.current) {
+                      musicaRef.current.pauseAsync();
+                    }
+                    navigation.navigate('ComoJugar');
+                  }}
                   activeOpacity={0.85}
                 >
                   <LinearGradient
@@ -309,7 +409,7 @@ export default function MenuScreen({ navigation }) {
                     style={styles.botonComoJugarGradient}
                   >
                     <Ionicons name="help-circle" size={22} color="#FFFFFF" />
-                    <Text style={styles.textoComoJugar}>¡Aprende y Gana!</Text>
+                    <Text style={styles.textoComoJugar}>Aprende y Gana!</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </Animated.View>

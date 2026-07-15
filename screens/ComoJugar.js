@@ -21,10 +21,14 @@ import {
 } from "@expo-google-fonts/baloo-2";
 import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer } from "expo-audio";
+import { Audio } from "expo-av";
 
 import { TUTORIAL_PASOS, TUTORIAL_TEXTOS, TUTORIAL_AUDIOS, TUTORIAL_CONFIG } from "../data/tutorial";
 
 const { width, height } = Dimensions.get("window");
+
+// MAPA DE MUSICA PARA TUTORIAL
+const MUSICA_TUTORIAL = require("../assets/sounds/musica_tutorial.mp3");
 
 function useFlote(distancia, duracion, delay = 0) {
   const valor = useRef(new Animated.Value(0)).current;
@@ -71,9 +75,75 @@ export default function ComoJugar({ navigation }) {
 
   const paso = TUTORIAL_PASOS[pasoActual];
 
+  // 🎵 Estado para musica de fondo
+  const musicaRef = useRef(null);
+  const [musicaActiva, setMusicaActiva] = useState(true);
+
   const introAudio = useAudioPlayer(TUTORIAL_AUDIOS.intro);
   const pasoAudio = useAudioPlayer(paso?.audio || null);
   const finalAudio = useAudioPlayer(TUTORIAL_AUDIOS.final);
+
+  // 🎵 Cargar musica de fondo del tutorial
+  useEffect(() => {
+    const cargarMusica = async () => {
+      try {
+        if (musicaRef.current) {
+          await musicaRef.current.stopAsync();
+          await musicaRef.current.unloadAsync();
+          musicaRef.current = null;
+        }
+
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+
+        const { sound } = await Audio.Sound.createAsync(
+          MUSICA_TUTORIAL,
+          { shouldPlay: true, isLooping: true, volume: 0.2 }
+        );
+        
+        musicaRef.current = sound;
+        setMusicaActiva(true);
+        await sound.playAsync();
+      } catch (error) {
+        console.log('Error cargando musica tutorial:', error);
+      }
+    };
+
+    cargarMusica();
+
+    return () => {
+      if (musicaRef.current) {
+        musicaRef.current.stopAsync();
+        musicaRef.current.unloadAsync();
+        musicaRef.current = null;
+      }
+    };
+  }, []);
+
+  // 🎵 Detener musica al navegar a otra pantalla
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      if (musicaRef.current) {
+        musicaRef.current.pauseAsync();
+      }
+    });
+
+    const unsubscribeFocus = navigation.addListener("focus", () => {
+      if (musicaRef.current && !mostrandoDemo && !mostrandoIntro) {
+        musicaRef.current.playAsync();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeFocus();
+    };
+  }, [navigation, mostrandoDemo, mostrandoIntro]);
 
   useEffect(() => {
     const reproducirAudio = async () => {
@@ -132,6 +202,10 @@ export default function ComoJugar({ navigation }) {
       }).start();
     } else {
       setMostrandoDemo(true);
+      // 🎵 Pausar musica al entrar a la demo
+      if (musicaRef.current) {
+        musicaRef.current.pauseAsync();
+      }
     }
 
     setTimeout(() => setProcesando(false), 400);
@@ -166,6 +240,13 @@ export default function ComoJugar({ navigation }) {
       finalAudio?.pause();
     } catch (e) {}
 
+    // 🎵 Detener musica al salir
+    if (musicaRef.current) {
+      musicaRef.current.stopAsync();
+      musicaRef.current.unloadAsync();
+      musicaRef.current = null;
+    }
+
     navigation.goBack();
     setTimeout(() => setProcesando(false), 400);
   };
@@ -182,6 +263,11 @@ export default function ComoJugar({ navigation }) {
     setPasoActual(0);
     setMostrandoDemo(false);
     scaleAnim.setValue(1);
+
+    // 🎵 Reanudar musica al volver a los pasos
+    if (musicaRef.current) {
+      musicaRef.current.playAsync();
+    }
 
     setTimeout(() => setProcesando(false), 400);
   };
@@ -317,7 +403,6 @@ export default function ComoJugar({ navigation }) {
           ]}
         />
 
-        {/* Estrellas decorativas */}
         {estrellasPosiciones.map((pos, index) => (
           <Animated.View
             key={index}
@@ -335,12 +420,10 @@ export default function ComoJugar({ navigation }) {
           </Animated.View>
         ))}
 
-        {/* Título arriba */}
         <View style={styles.demoHeader}>
           <Text style={styles.demoHeaderTitulo}>Aprende y Gana</Text>
         </View>
 
-        {/* Búho - pantalla final */}
         <View style={styles.buhoEsquinaFinal}>
           <Animated.View style={{ transform: [{ translateY: floteSabioDemo }] }}>
             <Image
@@ -494,7 +577,6 @@ export default function ComoJugar({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Búho - pasos */}
         <View style={styles.bloqueBuhoDialogo}>
           <View style={styles.buhoEsquinaPasos}>
             <Animated.View style={{ transform: [{ translateY: floteBuho }] }}>
@@ -527,6 +609,9 @@ export default function ComoJugar({ navigation }) {
   );
 }
 
+// ============================================================
+// ESTILOS (LOS MISMOS QUE TENÍAS)
+// ============================================================
 const styles = StyleSheet.create({
   fondo: { flex: 1 },
 
@@ -761,7 +846,6 @@ const styles = StyleSheet.create({
     color: "#1A365D",
   },
 
-  // Búho - estilos separados
   buhoEsquinaPasos: {
     position: "absolute",
     bottom: 0,
@@ -831,7 +915,6 @@ const styles = StyleSheet.create({
     lineHeight: width * 0.05,
   },
 
-  // Estilos para la pantalla final
   demoHeader: {
     position: "absolute",
     top: 60,
@@ -934,7 +1017,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 
-  // Estrellas regadas por la pantalla
   estrellaRegada: {
     position: "absolute",
     zIndex: 1,
